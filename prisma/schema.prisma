@@ -1,0 +1,96 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider     = "postgresql"
+  url          = env("DB_URL")
+  relationMode = "prisma"
+}
+
+model User {
+  id           BigInt   @id @default(autoincrement())
+  username     String   @unique
+  password     String
+  registerDate DateTime @default(now()) @map("register_date")
+  activated    Boolean  @default(false)
+  avatar       String?
+  logicDelete  Boolean  @default(false) @map("logic_delete")
+  role         String?
+
+  Board Board[]
+}
+
+model Board {
+  id          BigInt  @id @default(autoincrement())
+  title       String
+  inviteCode  String? @map("invite_code")
+  icon        String?
+  logicDelete Boolean @default(false) @map("logic_delete")
+
+  userId BigInt @map("user_id")
+  user   User   @relation(fields: [userId], references: [id])
+
+  Group  Group[]
+  Status Status[]
+  Ticket Ticket[]
+
+  @@index([userId])
+}
+
+model Group {
+  id           BigInt  @id @default(autoincrement())
+  title        String
+  color        String
+  displayOrder Float   @map("display_order")
+  logicDelete  Boolean @default(false) @map("logic_delete")
+
+  boardId BigInt @map("board_id")
+  board   Board  @relation(fields: [boardId], references: [id])
+
+  Status Status[]
+  Ticket Ticket[]
+
+  @@index([boardId])
+}
+
+model Status {
+  id           BigInt  @id @default(autoincrement())
+  title        String
+  color        String
+  displayOrder Float   @map("display_order")
+  logicDelete  Boolean @default(false) @map("logic_delete")
+
+  boardId BigInt @map("board_id")
+  board   Board  @relation(fields: [boardId], references: [id])
+  groupId BigInt @map("group_id")
+  group   Group  @relation(fields: [groupId], references: [id])
+
+  Ticket Ticket[]
+
+  @@index([boardId])
+  @@index([groupId])
+}
+
+model Ticket {
+  id           BigInt    @id @default(autoincrement())
+  title        String
+  content      String?
+  displayOrder Float     @map("display_order")
+  startDate    DateTime? @map("start_date")
+  endDate      DateTime? @map("end_date")
+  creationTime DateTime  @default(now()) @map("creation_time")
+  updateTime   DateTime  @default(now()) @map("update_time")
+  logicDelete  Boolean   @default(false) @map("logic_delete")
+
+  boardId  BigInt @map("board_id")
+  board    Board  @relation(fields: [boardId], references: [id])
+  groupId  BigInt @map("group_id")
+  group    Group  @relation(fields: [groupId], references: [id])
+  statusId BigInt @map("status_id")
+  status   Status @relation(fields: [statusId], references: [id])
+
+  @@index([boardId])
+  @@index([groupId])
+  @@index([statusId])
+}
