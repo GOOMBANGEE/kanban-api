@@ -11,6 +11,7 @@ import { CommonModule } from './common/common.module';
 import { UserModule } from './user/user.module';
 import { GlobalExceptionFilter } from './common/filter/global-exception.filter';
 import { AppService } from './app.service';
+import { BoardModule } from './board/board.module';
 
 @Module({
   imports: [
@@ -65,6 +66,7 @@ import { AppService } from './app.service';
     CommonModule,
     AuthModule,
     UserModule,
+    BoardModule,
   ],
   controllers: [],
   providers: [
