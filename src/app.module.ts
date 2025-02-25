@@ -12,6 +12,7 @@ import { UserModule } from './user/user.module';
 import { GlobalExceptionFilter } from './common/filter/global-exception.filter';
 import { AppService } from './app.service';
 import { BoardModule } from './board/board.module';
+import { StatusModule } from './status/status.module';
 
 @Module({
   imports: [
@@ -67,6 +68,7 @@ import { BoardModule } from './board/board.module';
     AuthModule,
     UserModule,
     BoardModule,
+    StatusModule,
   ],
   controllers: [],
   providers: [

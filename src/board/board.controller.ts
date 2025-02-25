@@ -42,6 +42,14 @@ export class BoardController {
     return this.boardService.boardList(page, requestUser);
   }
 
+  @Get(':id')
+  findOne(
+    @Param('id', ParseIntPipe) id: number,
+    @RequestUser() requestUser: RequestUser,
+  ) {
+    return this.boardService.findOne(id, requestUser);
+  }
+
   // api/board/:id
   @Patch(':id')
   update(

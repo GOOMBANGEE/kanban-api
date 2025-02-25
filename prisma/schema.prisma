@@ -31,27 +31,10 @@ model Board {
   userId BigInt @map("user_id")
   user   User   @relation(fields: [userId], references: [id])
 
-  Group  Group[]
   Status Status[]
   Ticket Ticket[]
 
   @@index([userId])
-}
-
-model Group {
-  id           BigInt  @id @default(autoincrement())
-  title        String
-  color        String
-  displayOrder Float   @map("display_order")
-  logicDelete  Boolean @default(false) @map("logic_delete")
-
-  boardId BigInt @map("board_id")
-  board   Board  @relation(fields: [boardId], references: [id])
-
-  Status Status[]
-  Ticket Ticket[]
-
-  @@index([boardId])
 }
 
 model Status {
@@ -60,16 +43,14 @@ model Status {
   color        String
   displayOrder Float   @map("display_order")
   logicDelete  Boolean @default(false) @map("logic_delete")
+  group        String
 
   boardId BigInt @map("board_id")
   board   Board  @relation(fields: [boardId], references: [id])
-  groupId BigInt @map("group_id")
-  group   Group  @relation(fields: [groupId], references: [id])
 
   Ticket Ticket[]
 
   @@index([boardId])
-  @@index([groupId])
 }
 
 model Ticket {
@@ -85,12 +66,9 @@ model Ticket {
 
   boardId  BigInt @map("board_id")
   board    Board  @relation(fields: [boardId], references: [id])
-  groupId  BigInt @map("group_id")
-  group    Group  @relation(fields: [groupId], references: [id])
   statusId BigInt @map("status_id")
   status   Status @relation(fields: [statusId], references: [id])
 
   @@index([boardId])
-  @@index([groupId])
   @@index([statusId])
 }

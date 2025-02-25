@@ -7,6 +7,6 @@ export class CreateBoardDto {
   title: string;
 
   @IsOptional()
-  @IsString({ message: VALIDATION_ERROR.VALUE_INVALID })
+  @IsString({ message: VALIDATION_ERROR.ICON_ERROR })
   icon: string;
 }

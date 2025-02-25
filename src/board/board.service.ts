@@ -48,7 +48,12 @@ export class BoardService {
       this.prisma.board.findMany({
         where: { logicDelete: false, userId: user.id },
         take: limit,
-        select: { id: true, title: true, icon: true, userId: true },
+        select: {
+          id: true,
+          title: true,
+          icon: true,
+          userId: true,
+        },
         orderBy: {
           id: 'desc',
         },
@@ -64,6 +69,25 @@ export class BoardService {
       page,
       totalPage: Math.ceil(total / limit),
     };
+  }
+
+  async findOne(id: number, requestUser: RequestUser) {
+    await Promise.all([
+      this.authService.validateRequestUser(requestUser),
+      this.validateBoard(id, requestUser),
+    ]);
+
+    const statusList = await this.prisma.status.findMany({
+      select: {
+        id: true,
+        title: true,
+        color: true,
+        displayOrder: true,
+        group: true,
+      },
+      where: { boardId: id, logicDelete: false },
+    });
+    return { statusList };
   }
 
   async update(
