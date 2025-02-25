@@ -8,7 +8,6 @@ import {
   BOARD_ERROR,
   BoardException,
 } from '../common/exception/board.exception';
-import { User } from '@prisma/client';
 import { ImageService } from '../common/image.service';
 
 @Injectable()
@@ -72,10 +71,11 @@ export class BoardService {
     requestUser: RequestUser,
     updateBoardDto: UpdateBoardDto,
   ) {
-    // 가입된 유저인지 검증
-    const user = await this.authService.validateRequestUser(requestUser);
-    // board 확인
-    const board = await this.validateBoard(id, user);
+    const [, board] = await Promise.all([
+      this.authService.validateRequestUser(requestUser),
+      this.validateBoard(id, requestUser),
+    ]);
+
     // icon 추가로직
     // 파일로 추가한 다음 파일경로만 db에 저장
     let image: { imageUrl: string } = null;
@@ -84,33 +84,33 @@ export class BoardService {
     }
 
     await this.prisma.board.update({
-      where: { id: board.id },
+      where: { id },
       data: {
-        title: updateBoardDto.title,
+        title: updateBoardDto.title ? updateBoardDto.title : board.title,
         icon: image ? image.imageUrl : null,
       },
     });
   }
 
   async remove(id: number, requestUser: RequestUser) {
-    // 가입된 유저인지 검증
-    const user = await this.authService.validateRequestUser(requestUser);
-    // board 확인
-    const board = await this.validateBoard(id, user);
+    await Promise.all([
+      this.authService.validateRequestUser(requestUser),
+      this.validateBoard(id, requestUser),
+    ]);
 
     // 삭제
     await this.prisma.board.update({
-      where: { id: board.id },
+      where: { id: id },
       data: { logicDelete: true },
     });
   }
 
-  async validateBoard(id: number, user: User) {
+  async validateBoard(id: number, requestUser: RequestUser) {
     const board = await this.prisma.board.findUnique({
       where: { id, logicDelete: false },
     });
     if (!board) throw new BoardException(BOARD_ERROR.BOARD_NOT_FOUND);
-    if (board.userId !== user.id)
+    if (board.userId !== BigInt(requestUser.id))
       throw new BoardException(BOARD_ERROR.PERMISSION_DENIED);
 
     return board;
