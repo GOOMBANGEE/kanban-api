@@ -22,24 +22,26 @@ import { RequestUser } from '../auth/decorator/user.decorator';
 export class StatusController {
   constructor(private readonly statusService: StatusService) {}
 
-  // /api/status
+  // /api/status/:boardId
   // return: { status }
-  @Post()
+  @Post(':boardId')
   create(
+    @Param('boardId', ParseIntPipe) boardId: number,
     @RequestUser() requestUser: RequestUser,
     @Body() createStatusDto: CreateStatusDto,
   ) {
-    return this.statusService.create(requestUser, createStatusDto);
+    return this.statusService.create(boardId, requestUser, createStatusDto);
   }
 
   // /api/status/:id
-  @Patch(':id')
+  @Patch(':boardId/:id')
   update(
+    @Param('boardId', ParseIntPipe) boardId: number,
     @Param('id', ParseIntPipe) id: number,
     @RequestUser() requestUser: RequestUser,
     @Body() updateStatusDto: UpdateStatusDto,
   ) {
-    return this.statusService.update(id, requestUser, updateStatusDto);
+    return this.statusService.update(boardId, id, requestUser, updateStatusDto);
   }
 
   // /api/status/:boardId/:id

@@ -42,14 +42,18 @@ export class StatusService {
     private readonly boardService: BoardService,
   ) {}
 
-  async create(requestUser: RequestUser, createStatusDto: CreateStatusDto) {
+  async create(
+    boardId: number,
+    requestUser: RequestUser,
+    createStatusDto: CreateStatusDto,
+  ) {
     await Promise.all([
       this.authService.validateRequestUser(requestUser),
-      this.boardService.validateBoard(createStatusDto.boardId, requestUser),
+      this.boardService.validateBoard(boardId, requestUser),
       this.validateStatusGroup(createStatusDto.group),
     ]);
     const lastStatus = await this.prisma.status.findFirst({
-      where: { boardId: createStatusDto.boardId, logicDelete: false },
+      where: { boardId: boardId, logicDelete: false },
       select: { displayOrder: true },
       orderBy: { displayOrder: 'desc' },
     });
@@ -59,27 +63,29 @@ export class StatusService {
         title: createStatusDto.title,
         color: color.black,
         displayOrder: lastStatus ? lastStatus.displayOrder * 2 : 1024.0,
-        boardId: createStatusDto.boardId,
+        boardId: boardId,
         group: createStatusDto.group,
       },
     });
   }
 
   async update(
+    boardId: number,
     id: number,
     requestUser: RequestUser,
     updateStatusDto: UpdateStatusDto,
   ) {
     const [, , status] = await Promise.all([
       this.authService.validateRequestUser(requestUser),
-      this.boardService.validateBoard(updateStatusDto.boardId, requestUser),
-      this.validateStatus(id),
+      this.boardService.validateBoard(boardId, requestUser),
+      this.validateStatus(boardId, id),
       this.validateStatusColor(updateStatusDto.color),
       this.validateStatusGroup(updateStatusDto.group),
     ]);
     // displayOrder 재배치 로직
     if (updateStatusDto.displayOrder) {
       const statusList = await this.displayOrderReorder(
+        boardId,
         id,
         updateStatusDto,
         status,
@@ -106,6 +112,7 @@ export class StatusService {
 
   // displayOrder 재배치 로직
   async displayOrderReorder(
+    boardId: number,
     id: number,
     updateStatusDto: UpdateStatusDto,
     status: Status,
@@ -119,7 +126,7 @@ export class StatusService {
             displayOrder: true,
           },
           where: {
-            boardId: updateStatusDto.boardId,
+            boardId: boardId,
             group: updateStatusDto.group,
             logicDelete: false,
             displayOrder: {
@@ -134,7 +141,7 @@ export class StatusService {
             displayOrder: true,
           },
           where: {
-            boardId: updateStatusDto.boardId,
+            boardId: boardId,
             group: updateStatusDto.group,
             id: { not: id },
             logicDelete: false,
@@ -158,7 +165,7 @@ export class StatusService {
         WITH Ordered AS (
             SELECT id, ROW_NUMBER() OVER (ORDER BY display_order) AS rn
             FROM "Status" s
-            WHERE s.board_id = ${updateStatusDto.boardId} AND
+            WHERE s.board_id = ${boardId} AND
                   s.logic_delete = false AND
                   s.group = ${updateStatusDto.group} AND
                   NOT s.id = ${id} 
@@ -212,7 +219,7 @@ export class StatusService {
           group: true,
         },
         where: {
-          boardId: updateStatusDto.boardId,
+          boardId: boardId,
           logicDelete: false,
         },
       });
@@ -224,7 +231,7 @@ export class StatusService {
     await Promise.all([
       this.authService.validateRequestUser(requestUser),
       this.boardService.validateBoard(boardId, requestUser),
-      this.validateStatus(id),
+      this.validateStatus(boardId, id),
     ]);
 
     await this.prisma.status.update({
@@ -253,9 +260,9 @@ export class StatusService {
       ]);
     }
   }
-  async validateStatus(id: number) {
+  async validateStatus(boardId: number, id: number) {
     const status = await this.prisma.status.findUnique({
-      where: { id, logicDelete: false },
+      where: { id, logicDelete: false, boardId },
     });
     if (!status) throw new StatusException(STATUS_ERROR.STATUS_NOT_FOUND);
 
