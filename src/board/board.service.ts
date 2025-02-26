@@ -84,6 +84,14 @@ export class BoardService {
         color: true,
         displayOrder: true,
         group: true,
+        Ticket: {
+          select: {
+            id: true,
+            title: true,
+            displayOrder: true,
+            statusId: true,
+          },
+        },
       },
       where: { boardId: id, logicDelete: false },
     });

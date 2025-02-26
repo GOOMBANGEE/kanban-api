@@ -13,6 +13,7 @@ import { GlobalExceptionFilter } from './common/filter/global-exception.filter';
 import { AppService } from './app.service';
 import { BoardModule } from './board/board.module';
 import { StatusModule } from './status/status.module';
+import { TicketModule } from './ticket/ticket.module';
 
 @Module({
   imports: [
@@ -69,6 +70,7 @@ import { StatusModule } from './status/status.module';
     UserModule,
     BoardModule,
     StatusModule,
+    TicketModule,
   ],
   controllers: [],
   providers: [

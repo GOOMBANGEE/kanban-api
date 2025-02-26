@@ -9,5 +9,6 @@ import { BoardModule } from '../board/board.module';
   imports: [CommonModule, AuthModule, BoardModule],
   controllers: [StatusController],
   providers: [StatusService],
+  exports: [StatusService],
 })
 export class StatusModule {}
