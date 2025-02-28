@@ -5,7 +5,7 @@ import { PrismaService } from '../common/prisma.service';
 import { AuthService } from '../auth/auth.service';
 import { BoardService } from '../board/board.service';
 import { StatusService } from '../status/status.service';
-import { RequestUser } from '../auth/decorator/user.decorator';
+import { JwtUserInfo } from '../auth/decorator/user.decorator';
 import {
   TICKET_ERROR,
   TicketException,
@@ -26,12 +26,12 @@ export class TicketService {
   async create(
     boardId: number,
     statusId: number,
-    requestUser: RequestUser,
+    jwtUserInfo: JwtUserInfo,
     createTicketDto: CreateTicketDto,
   ) {
     const [, , status] = await Promise.all([
-      this.authService.validateRequestUser(requestUser),
-      this.boardService.validateBoard(boardId, requestUser),
+      this.authService.validateRequestUser(jwtUserInfo),
+      this.boardService.validateBoard(boardId, jwtUserInfo),
       this.statusService.validateStatus(boardId, statusId),
     ]);
 
@@ -58,11 +58,11 @@ export class TicketService {
     boardId: number,
     statusId: number,
     id: number,
-    requestUser: RequestUser,
+    jwtUserInfo: JwtUserInfo,
   ) {
     const [, , , ticket] = await Promise.all([
-      this.authService.validateRequestUser(requestUser),
-      this.boardService.validateBoard(boardId, requestUser),
+      this.authService.validateRequestUser(jwtUserInfo),
+      this.boardService.validateBoard(boardId, jwtUserInfo),
       this.statusService.validateStatus(boardId, statusId),
       this.validateTicket(id),
     ]);
@@ -74,12 +74,12 @@ export class TicketService {
     boardId: number,
     statusId: number,
     id: number,
-    requestUser: RequestUser,
+    jwtUserInfo: JwtUserInfo,
     updateTicketDto: UpdateTicketDto,
   ) {
     await Promise.all([
-      this.authService.validateRequestUser(requestUser),
-      this.boardService.validateBoard(boardId, requestUser),
+      this.authService.validateRequestUser(jwtUserInfo),
+      this.boardService.validateBoard(boardId, jwtUserInfo),
       this.statusService.validateStatus(boardId, statusId),
       this.validateTicket(id),
     ]);
@@ -242,11 +242,11 @@ export class TicketService {
     boardId: number,
     statusId: number,
     id: number,
-    requestUser: RequestUser,
+    jwtUserInfo: JwtUserInfo,
   ) {
     await Promise.all([
-      this.authService.validateRequestUser(requestUser),
-      this.boardService.validateBoard(boardId, requestUser),
+      this.authService.validateRequestUser(jwtUserInfo),
+      this.boardService.validateBoard(boardId, jwtUserInfo),
       this.statusService.validateStatus(boardId, statusId),
       this.validateTicket(id),
     ]);

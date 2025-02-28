@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CreateBoardDto } from './dto/create-board.dto';
 import { UpdateBoardDto } from './dto/update-board.dto';
-import { RequestUser } from '../auth/decorator/user.decorator';
+import { JwtUserInfo } from '../auth/decorator/user.decorator';
 import { PrismaService } from '../common/prisma.service';
 import { AuthService } from '../auth/auth.service';
 import {
@@ -18,9 +18,9 @@ export class BoardService {
     private readonly imageService: ImageService,
   ) {}
 
-  async create(requestUser: RequestUser, createBoardDto: CreateBoardDto) {
+  async create(jwtUserInfo: JwtUserInfo, createBoardDto: CreateBoardDto) {
     // 가입된 유저인지 검증
-    const user = await this.authService.validateRequestUser(requestUser);
+    const user = await this.authService.validateRequestUser(jwtUserInfo);
 
     // icon 추가로직
     // 파일로 추가한 다음 파일경로만 db에 저장
@@ -39,9 +39,9 @@ export class BoardService {
     return board.id;
   }
 
-  async boardList(page: number, requestUser: RequestUser) {
+  async boardList(page: number, jwtUserInfo: JwtUserInfo) {
     // 가입된 유저인지 검증
-    const user = await this.authService.validateRequestUser(requestUser);
+    const user = await this.authService.validateRequestUser(jwtUserInfo);
     const limit = 10;
 
     const [boardList, total] = await this.prisma.$transaction([
@@ -71,10 +71,10 @@ export class BoardService {
     };
   }
 
-  async findOne(id: number, requestUser: RequestUser) {
+  async findOne(id: number, jwtUserInfo: JwtUserInfo) {
     await Promise.all([
-      this.authService.validateRequestUser(requestUser),
-      this.validateBoard(id, requestUser),
+      this.authService.validateRequestUser(jwtUserInfo),
+      this.validateBoard(id, jwtUserInfo),
     ]);
 
     const statusList = await this.prisma.status.findMany({
@@ -100,12 +100,12 @@ export class BoardService {
 
   async update(
     id: number,
-    requestUser: RequestUser,
+    jwtUserInfo: JwtUserInfo,
     updateBoardDto: UpdateBoardDto,
   ) {
     const [, board] = await Promise.all([
-      this.authService.validateRequestUser(requestUser),
-      this.validateBoard(id, requestUser),
+      this.authService.validateRequestUser(jwtUserInfo),
+      this.validateBoard(id, jwtUserInfo),
     ]);
 
     // icon 추가로직
@@ -124,10 +124,10 @@ export class BoardService {
     });
   }
 
-  async remove(id: number, requestUser: RequestUser) {
+  async remove(id: number, jwtUserInfo: JwtUserInfo) {
     await Promise.all([
-      this.authService.validateRequestUser(requestUser),
-      this.validateBoard(id, requestUser),
+      this.authService.validateRequestUser(jwtUserInfo),
+      this.validateBoard(id, jwtUserInfo),
     ]);
 
     // 삭제
@@ -137,12 +137,12 @@ export class BoardService {
     });
   }
 
-  async validateBoard(id: number, requestUser: RequestUser) {
+  async validateBoard(id: number, jwtUserInfo: JwtUserInfo) {
     const board = await this.prisma.board.findUnique({
       where: { id, logicDelete: false },
     });
     if (!board) throw new BoardException(BOARD_ERROR.BOARD_NOT_FOUND);
-    if (board.userId !== BigInt(requestUser.id))
+    if (board.userId !== BigInt(jwtUserInfo.id))
       throw new BoardException(BOARD_ERROR.PERMISSION_DENIED);
 
     return board;

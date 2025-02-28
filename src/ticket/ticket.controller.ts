@@ -15,7 +15,7 @@ import { CreateTicketDto } from './dto/create-ticket.dto';
 import { UpdateTicketDto } from './dto/update-ticket.dto';
 import { BigIntInterceptor } from '../common/interceptor/big-int.interceptor';
 import { AccessGuard } from '../auth/guard/access.guard';
-import { RequestUser } from '../auth/decorator/user.decorator';
+import { JwtUserInfo, RequestUser } from '../auth/decorator/user.decorator';
 
 @UseInterceptors(BigIntInterceptor)
 @UseGuards(AccessGuard)
@@ -28,13 +28,13 @@ export class TicketController {
   create(
     @Param('boardId', ParseIntPipe) boardId: number,
     @Param('statusId', ParseIntPipe) statusId: number,
-    @RequestUser() requestUser: RequestUser,
+    @RequestUser() jwtUserInfo: JwtUserInfo,
     @Body() createTicketDto: CreateTicketDto,
   ) {
     return this.ticketService.create(
       boardId,
       statusId,
-      requestUser,
+      jwtUserInfo,
       createTicketDto,
     );
   }
@@ -45,9 +45,9 @@ export class TicketController {
     @Param('boardId', ParseIntPipe) boardId: number,
     @Param('statusId', ParseIntPipe) statusId: number,
     @Param('id', ParseIntPipe) id: number,
-    @RequestUser() requestUser: RequestUser,
+    @RequestUser() jwtUserInfo: JwtUserInfo,
   ) {
-    return this.ticketService.findOne(boardId, statusId, id, requestUser);
+    return this.ticketService.findOne(boardId, statusId, id, jwtUserInfo);
   }
 
   // api/ticket/:boardId/:statusId/:id
@@ -56,14 +56,14 @@ export class TicketController {
     @Param('boardId', ParseIntPipe) boardId: number,
     @Param('statusId', ParseIntPipe) statusId: number,
     @Param('id', ParseIntPipe) id: number,
-    @RequestUser() requestUser: RequestUser,
+    @RequestUser() jwtUserInfo: JwtUserInfo,
     @Body() updateTicketDto: UpdateTicketDto,
   ) {
     return this.ticketService.update(
       boardId,
       statusId,
       id,
-      requestUser,
+      jwtUserInfo,
       updateTicketDto,
     );
   }
@@ -74,8 +74,8 @@ export class TicketController {
     @Param('boardId', ParseIntPipe) boardId: number,
     @Param('statusId', ParseIntPipe) statusId: number,
     @Param('id', ParseIntPipe) id: number,
-    @RequestUser() requestUser: RequestUser,
+    @RequestUser() jwtUserInfo: JwtUserInfo,
   ) {
-    return this.ticketService.remove(boardId, statusId, id, requestUser);
+    return this.ticketService.remove(boardId, statusId, id, jwtUserInfo);
   }
 }

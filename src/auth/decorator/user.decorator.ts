@@ -8,13 +8,13 @@ export interface UserBase {
 }
 
 // local guard
-export interface RequestUserLocal extends UserBase {
+export interface LocalUserInfo extends UserBase {
   registerDate: Date;
   activated: boolean;
 }
 
 // jwt(access, refresh) guard
-export interface RequestUser extends UserBase {
+export interface JwtUserInfo extends UserBase {
   type: string; // accessToken, refreshToken
   iat: number;
   exp: number;

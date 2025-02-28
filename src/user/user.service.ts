@@ -7,10 +7,7 @@ import { envKey } from '../common/const/env.const';
 import { Response } from 'express';
 import { USER_ERROR, UserException } from '../common/exception/user.exception';
 import { AuthService } from '../auth/auth.service';
-import {
-  RequestUser,
-  RequestUserLocal,
-} from '../auth/decorator/user.decorator';
+import { JwtUserInfo, LocalUserInfo } from '../auth/decorator/user.decorator';
 
 @Injectable()
 export class UserService {
@@ -28,11 +25,11 @@ export class UserService {
 
   // /user
   async update(
-    requestUser: RequestUser,
+    jwtUserInfo: JwtUserInfo,
     updateUserDto: UpdateUserDto,
     response: Response,
   ) {
-    const user = await this.authService.validateRequestUser(requestUser);
+    const user = await this.authService.validateRequestUser(jwtUserInfo);
     // username update
     const username = updateUserDto.username;
     if (username) {
@@ -69,7 +66,7 @@ export class UserService {
     }
 
     // generate new accessToken, refreshToken
-    const newUser: RequestUserLocal = username
+    const newUser: LocalUserInfo = username
       ? { ...user, id: user.id.toString(), username }
       : { ...user, id: user.id.toString() };
     const { accessToken, accessTokenExpires } =
@@ -83,8 +80,8 @@ export class UserService {
   }
 
   // /user
-  async delete(requestUser: RequestUser, response: Response) {
-    const user = await this.authService.validateRequestUser(requestUser);
+  async delete(jwtUserInfo: JwtUserInfo, response: Response) {
+    const user = await this.authService.validateRequestUser(jwtUserInfo);
     if (!user) throw new UserException(USER_ERROR.UNREGISTERED);
 
     response.clearCookie(this.refreshTokenKey);

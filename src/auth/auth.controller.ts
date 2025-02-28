@@ -11,7 +11,11 @@ import {
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { RefreshGuard } from './guard/refresh.guard';
-import { RequestUser, RequestUserLocal } from './decorator/user.decorator';
+import {
+  JwtUserInfo,
+  LocalUserInfo,
+  RequestUser,
+} from './decorator/user.decorator';
 import { Response } from 'express';
 import { AccessGuard } from './guard/access.guard';
 import { LocalGuard } from './guard/local.guard';
@@ -36,10 +40,10 @@ export class AuthController {
   @UseGuards(LocalGuard) // auth/guard/local.guard.ts => LocalGuard extends AuthGuard('local')
   @HttpCode(HttpStatus.OK)
   login(
-    @RequestUser() requestUser: RequestUserLocal,
+    @RequestUser() localUserInfo: LocalUserInfo,
     @Res({ passthrough: true }) response: Response,
   ) {
-    return this.authService.login(requestUser, response);
+    return this.authService.login(localUserInfo, response);
   }
 
   // /auth/refresh
@@ -48,10 +52,10 @@ export class AuthController {
   @UseGuards(RefreshGuard)
   @HttpCode(HttpStatus.OK)
   async refresh(
-    @RequestUser() requestUser: RequestUser,
+    @RequestUser() jwtUserInfo: JwtUserInfo,
     @Res({ passthrough: true }) response: Response,
   ) {
-    return this.authService.refreshToken(requestUser, response);
+    return this.authService.refreshToken(jwtUserInfo, response);
   }
 
   // /auth/logout

@@ -14,7 +14,7 @@ import { CreateStatusDto } from './dto/create-status.dto';
 import { UpdateStatusDto } from './dto/update-status.dto';
 import { AccessGuard } from '../auth/guard/access.guard';
 import { BigIntInterceptor } from '../common/interceptor/big-int.interceptor';
-import { RequestUser } from '../auth/decorator/user.decorator';
+import { JwtUserInfo, RequestUser } from '../auth/decorator/user.decorator';
 
 @UseInterceptors(BigIntInterceptor)
 @UseGuards(AccessGuard)
@@ -27,10 +27,10 @@ export class StatusController {
   @Post(':boardId')
   create(
     @Param('boardId', ParseIntPipe) boardId: number,
-    @RequestUser() requestUser: RequestUser,
+    @RequestUser() jwtUserInfo: JwtUserInfo,
     @Body() createStatusDto: CreateStatusDto,
   ) {
-    return this.statusService.create(boardId, requestUser, createStatusDto);
+    return this.statusService.create(boardId, jwtUserInfo, createStatusDto);
   }
 
   // /api/status/:id
@@ -38,10 +38,10 @@ export class StatusController {
   update(
     @Param('boardId', ParseIntPipe) boardId: number,
     @Param('id', ParseIntPipe) id: number,
-    @RequestUser() requestUser: RequestUser,
+    @RequestUser() jwtUserInfo: JwtUserInfo,
     @Body() updateStatusDto: UpdateStatusDto,
   ) {
-    return this.statusService.update(boardId, id, requestUser, updateStatusDto);
+    return this.statusService.update(boardId, id, jwtUserInfo, updateStatusDto);
   }
 
   // /api/status/:boardId/:id
@@ -49,8 +49,8 @@ export class StatusController {
   remove(
     @Param('boardId', ParseIntPipe) boardId: number,
     @Param('id', ParseIntPipe) id: number,
-    @RequestUser() requestUser: RequestUser,
+    @RequestUser() jwtUserInfo: JwtUserInfo,
   ) {
-    return this.statusService.remove(boardId, id, requestUser);
+    return this.statusService.remove(boardId, id, jwtUserInfo);
   }
 }

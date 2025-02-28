@@ -4,7 +4,7 @@ import { UpdateStatusDto } from './dto/update-status.dto';
 import { PrismaService } from '../common/prisma.service';
 import { AuthService } from '../auth/auth.service';
 import { BoardService } from '../board/board.service';
-import { RequestUser } from '../auth/decorator/user.decorator';
+import { JwtUserInfo } from '../auth/decorator/user.decorator';
 import {
   STATUS_ERROR,
   StatusException,
@@ -44,12 +44,12 @@ export class StatusService {
 
   async create(
     boardId: number,
-    requestUser: RequestUser,
+    jwtUserInfo: JwtUserInfo,
     createStatusDto: CreateStatusDto,
   ) {
     await Promise.all([
-      this.authService.validateRequestUser(requestUser),
-      this.boardService.validateBoard(boardId, requestUser),
+      this.authService.validateRequestUser(jwtUserInfo),
+      this.boardService.validateBoard(boardId, jwtUserInfo),
       this.validateStatusGroup(createStatusDto.group),
     ]);
     const lastStatus = await this.prisma.status.findFirst({
@@ -72,12 +72,12 @@ export class StatusService {
   async update(
     boardId: number,
     id: number,
-    requestUser: RequestUser,
+    jwtUserInfo: JwtUserInfo,
     updateStatusDto: UpdateStatusDto,
   ) {
     const [, , status] = await Promise.all([
-      this.authService.validateRequestUser(requestUser),
-      this.boardService.validateBoard(boardId, requestUser),
+      this.authService.validateRequestUser(jwtUserInfo),
+      this.boardService.validateBoard(boardId, jwtUserInfo),
       this.validateStatus(boardId, id),
       this.validateStatusColor(updateStatusDto.color),
       this.validateStatusGroup(updateStatusDto.group),
@@ -227,10 +227,10 @@ export class StatusService {
     }
   }
 
-  async remove(boardId: number, id: number, requestUser: RequestUser) {
+  async remove(boardId: number, id: number, jwtUserInfo: JwtUserInfo) {
     await Promise.all([
-      this.authService.validateRequestUser(requestUser),
-      this.boardService.validateBoard(boardId, requestUser),
+      this.authService.validateRequestUser(jwtUserInfo),
+      this.boardService.validateBoard(boardId, jwtUserInfo),
       this.validateStatus(boardId, id),
     ]);
 

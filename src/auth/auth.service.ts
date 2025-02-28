@@ -9,14 +9,13 @@ import { CookieOptions } from 'express-serve-static-core';
 import { PrismaService } from '../common/prisma.service';
 import { USER_ERROR, UserException } from '../common/exception/user.exception';
 import {
-  RequestUser,
-  RequestUserLocal,
+  JwtUserInfo,
+  LocalUserInfo,
   UserBase,
 } from './decorator/user.decorator';
 
 @Injectable()
 export class AuthService {
-  private readonly activationCodeLength: number;
   private readonly saltOrRounds: number;
   private readonly accessTokenKey: string;
   private readonly accessTokenExpires: number;
@@ -30,9 +29,6 @@ export class AuthService {
     private readonly configService: ConfigService,
     private readonly prisma: PrismaService,
   ) {
-    this.activationCodeLength = this.configService.get(
-      envKey.activationCodeLength,
-    );
     this.saltOrRounds = Number(this.configService.get(envKey.saltOrRounds));
     this.accessTokenKey = this.configService.get(envKey.accessTokenKey);
     this.accessTokenExpires = this.configService.get(envKey.accessTokenExpires);
@@ -66,7 +62,7 @@ export class AuthService {
       data: { ...registerDto, password: hashedPassword },
     });
 
-    const requestUserLocal: RequestUserLocal = {
+    const localUserInfo: LocalUserInfo = {
       id: user.id.toString(),
       username: user.username,
       role: user.role,
@@ -75,8 +71,8 @@ export class AuthService {
     };
 
     const { accessToken, accessTokenExpires } =
-      await this.generateAccessToken(requestUserLocal);
-    await this.generateRefreshToken(requestUserLocal, response);
+      await this.generateAccessToken(localUserInfo);
+    await this.generateRefreshToken(localUserInfo, response);
     return {
       username: registerDto.username,
       accessToken,
@@ -104,13 +100,13 @@ export class AuthService {
   }
 
   // /auth/login
-  async login(requestUserLocal: RequestUserLocal, response: Response) {
+  async login(localUserInfo: LocalUserInfo, response: Response) {
     const { accessToken, accessTokenExpires } =
-      await this.generateAccessToken(requestUserLocal);
-    await this.generateRefreshToken(requestUserLocal, response);
+      await this.generateAccessToken(localUserInfo);
+    await this.generateRefreshToken(localUserInfo, response);
 
     return {
-      username: requestUserLocal.username,
+      username: localUserInfo.username,
       accessToken,
       accessTokenExpires,
     };
@@ -154,20 +150,20 @@ export class AuthService {
   }
 
   // /auth/refresh
-  async refreshToken(requestUser: RequestUser, response: Response) {
+  async refreshToken(jwtUserInfo: JwtUserInfo, response: Response) {
     if (
-      requestUser.type !== this.refreshTokenKey ||
-      Date.now() >= requestUser.exp * 1000
+      jwtUserInfo.type !== this.refreshTokenKey ||
+      Date.now() >= jwtUserInfo.exp * 1000
     ) {
       response.clearCookie(this.refreshTokenKey);
       throw new UserException(USER_ERROR.REFRESH_TOKEN_INVALID);
     }
     const { accessToken, accessTokenExpires } =
-      await this.generateAccessToken(requestUser);
+      await this.generateAccessToken(jwtUserInfo);
 
     return {
-      id: requestUser.id,
-      username: requestUser.username,
+      id: jwtUserInfo.id,
+      username: jwtUserInfo.username,
       accessToken,
       accessTokenExpires,
     };
@@ -178,11 +174,11 @@ export class AuthService {
     response.clearCookie(this.refreshTokenKey);
   }
 
-  async validateRequestUser(requestUser: RequestUser) {
-    if (requestUser) {
+  async validateRequestUser(jwtUserInfo: JwtUserInfo) {
+    if (jwtUserInfo) {
       try {
         return await this.prisma.user.findUnique({
-          where: { id: BigInt(requestUser.id) },
+          where: { id: BigInt(jwtUserInfo.id) },
         });
       } catch {
         throw new UserException(USER_ERROR.UNREGISTERED);

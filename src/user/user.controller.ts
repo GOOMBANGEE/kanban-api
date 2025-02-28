@@ -7,7 +7,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { RequestUser } from '../auth/decorator/user.decorator';
+import { JwtUserInfo, RequestUser } from '../auth/decorator/user.decorator';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { Response } from 'express';
 import { AccessGuard } from '../auth/guard/access.guard';
@@ -21,26 +21,26 @@ export class UserController {
   // /user
   @Patch()
   async update(
-    @RequestUser() requestUser: RequestUser,
+    @RequestUser() jwtUserInfo: JwtUserInfo,
     @Body() updateUserDto: UpdateUserDto,
     @Res({ passthrough: true }) response: Response,
   ) {
-    if (!requestUser || requestUser.role?.includes('admin')) {
+    if (!jwtUserInfo || jwtUserInfo.role?.includes('admin')) {
       throw new UserException(USER_ERROR.PERMISSION_DENIED);
     }
-    return this.userService.update(requestUser, updateUserDto, response);
+    return this.userService.update(jwtUserInfo, updateUserDto, response);
   }
 
   // /user
   // return: clear-cookie('refreshToken')
   @Delete()
   async delete(
-    @RequestUser() requestUser: RequestUser,
+    @RequestUser() jwtUserInfo: JwtUserInfo,
     @Res({ passthrough: true }) response: Response,
   ) {
-    if (!requestUser || requestUser.role?.includes('admin')) {
+    if (!jwtUserInfo || jwtUserInfo.role?.includes('admin')) {
       throw new UserException(USER_ERROR.PERMISSION_DENIED);
     }
-    return this.userService.delete(requestUser, response);
+    return this.userService.delete(jwtUserInfo, response);
   }
 }
