@@ -4,9 +4,10 @@ import { StatusController } from './status.controller';
 import { CommonModule } from '../common/common.module';
 import { AuthModule } from '../auth/auth.module';
 import { BoardModule } from '../board/board.module';
+import { WebsocketModule } from '../websocket/websocket.module';
 
 @Module({
-  imports: [CommonModule, AuthModule, BoardModule],
+  imports: [CommonModule, AuthModule, BoardModule, WebsocketModule],
   controllers: [StatusController],
   providers: [StatusService],
   exports: [StatusService],

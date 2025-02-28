@@ -251,7 +251,7 @@ export class TicketService {
       this.validateTicket(id),
     ]);
 
-    await this.prisma.ticket.update({
+    return this.prisma.ticket.update({
       where: { id },
       data: { logicDelete: true },
     });

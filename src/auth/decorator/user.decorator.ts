@@ -1,5 +1,6 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 import { Request } from 'express';
+import { Socket } from 'socket.io';
 
 export interface UserBase {
   id: string;
@@ -24,5 +25,12 @@ export const RequestUser = createParamDecorator(
   (data: unknown, context: ExecutionContext) => {
     const request: Request = context.switchToHttp().getRequest();
     return request.user;
+  },
+);
+
+export const WsUser = createParamDecorator(
+  (data: unknown, context: ExecutionContext) => {
+    const socket: Socket = context.switchToWs().getClient();
+    return socket.data.user;
   },
 );

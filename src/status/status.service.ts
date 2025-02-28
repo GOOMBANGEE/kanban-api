@@ -102,7 +102,7 @@ export class StatusService {
       group: updateStatusDto.group ? updateStatusDto.group : status.group,
     };
 
-    await this.prisma.status.update({
+    return this.prisma.status.update({
       where: { id: status.id, logicDelete: false },
       data: {
         ...updateData,
@@ -234,7 +234,7 @@ export class StatusService {
       this.validateStatus(boardId, id),
     ]);
 
-    await this.prisma.status.update({
+    return this.prisma.status.update({
       where: { id },
       data: { logicDelete: true },
     });

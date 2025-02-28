@@ -15,42 +15,79 @@ import { UpdateStatusDto } from './dto/update-status.dto';
 import { AccessGuard } from '../auth/guard/access.guard';
 import { BigIntInterceptor } from '../common/interceptor/big-int.interceptor';
 import { JwtUserInfo, RequestUser } from '../auth/decorator/user.decorator';
+import { WebsocketGateway } from '../websocket/websocket.gateway';
 
 @UseInterceptors(BigIntInterceptor)
 @UseGuards(AccessGuard)
 @Controller('api/status')
 export class StatusController {
-  constructor(private readonly statusService: StatusService) {}
+  constructor(
+    private readonly statusService: StatusService,
+    private readonly websocketGateway: WebsocketGateway,
+  ) {}
 
   // /api/status/:boardId
   // return: { status }
   @Post(':boardId')
-  create(
+  async create(
     @Param('boardId', ParseIntPipe) boardId: number,
     @RequestUser() jwtUserInfo: JwtUserInfo,
     @Body() createStatusDto: CreateStatusDto,
   ) {
-    return this.statusService.create(boardId, jwtUserInfo, createStatusDto);
+    const status = await this.statusService.create(
+      boardId,
+      jwtUserInfo,
+      createStatusDto,
+    );
+
+    this.websocketGateway.sendBoardMessage({
+      boardId: boardId,
+      userId: jwtUserInfo.id,
+      message: status,
+    });
+
+    return { status };
   }
 
   // /api/status/:id
   @Patch(':boardId/:id')
-  update(
+  async update(
     @Param('boardId', ParseIntPipe) boardId: number,
     @Param('id', ParseIntPipe) id: number,
     @RequestUser() jwtUserInfo: JwtUserInfo,
     @Body() updateStatusDto: UpdateStatusDto,
   ) {
-    return this.statusService.update(boardId, id, jwtUserInfo, updateStatusDto);
+    const result = await this.statusService.update(
+      boardId,
+      id,
+      jwtUserInfo,
+      updateStatusDto,
+    );
+
+    this.websocketGateway.sendBoardMessage({
+      boardId: boardId,
+      userId: jwtUserInfo.id,
+      message: result,
+    });
+
+    return { result };
   }
 
   // /api/status/:boardId/:id
   @Delete(':boardId/:id')
-  remove(
+  async remove(
     @Param('boardId', ParseIntPipe) boardId: number,
     @Param('id', ParseIntPipe) id: number,
     @RequestUser() jwtUserInfo: JwtUserInfo,
   ) {
-    return this.statusService.remove(boardId, id, jwtUserInfo);
+    const status = await this.statusService.remove(boardId, id, jwtUserInfo);
+
+    this.websocketGateway.sendBoardMessage({
+      boardId: boardId,
+      userId: jwtUserInfo.id,
+      message: status,
+    });
+
+    return { status };
   }
 }

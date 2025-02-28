@@ -14,6 +14,7 @@ import { AppService } from './app.service';
 import { BoardModule } from './board/board.module';
 import { StatusModule } from './status/status.module';
 import { TicketModule } from './ticket/ticket.module';
+import { WebsocketModule } from './websocket/websocket.module';
 
 @Module({
   imports: [
@@ -71,6 +72,7 @@ import { TicketModule } from './ticket/ticket.module';
     BoardModule,
     StatusModule,
     TicketModule,
+    WebsocketModule,
   ],
   controllers: [],
   providers: [

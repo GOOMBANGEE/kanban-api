@@ -17,12 +17,16 @@ import { UpdateBoardDto } from './dto/update-board.dto';
 import { JwtUserInfo, RequestUser } from '../auth/decorator/user.decorator';
 import { AccessGuard } from '../auth/guard/access.guard';
 import { BigIntInterceptor } from '../common/interceptor/big-int.interceptor';
+import { WebsocketGateway } from '../websocket/websocket.gateway';
 
 @UseInterceptors(BigIntInterceptor)
 @UseGuards(AccessGuard)
 @Controller('api/board')
 export class BoardController {
-  constructor(private readonly boardService: BoardService) {}
+  constructor(
+    private readonly boardService: BoardService,
+    private readonly websocketGateway: WebsocketGateway,
+  ) {}
 
   // api/board
   @Post()
@@ -52,20 +56,38 @@ export class BoardController {
 
   // api/board/:id
   @Patch(':id')
-  update(
+  async update(
     @Param('id', ParseIntPipe) id: number,
     @RequestUser() jwtUserInfo: JwtUserInfo,
     @Body() updateBoardDto: UpdateBoardDto,
   ) {
-    return this.boardService.update(id, jwtUserInfo, updateBoardDto);
+    const board = await this.boardService.update(
+      id,
+      jwtUserInfo,
+      updateBoardDto,
+    );
+
+    this.websocketGateway.sendBoardMessage({
+      boardId: id,
+      userId: jwtUserInfo.id,
+      message: board,
+    });
+    return { board };
   }
 
   // api/board/:id
   @Delete(':id')
-  remove(
+  async remove(
     @Param('id', ParseIntPipe) id: number,
     @RequestUser() jwtUserInfo: JwtUserInfo,
   ) {
-    return this.boardService.remove(id, jwtUserInfo);
+    const board = await this.boardService.remove(id, jwtUserInfo);
+
+    this.websocketGateway.sendBoardMessage({
+      boardId: id,
+      userId: jwtUserInfo.id,
+      message: board.id,
+    });
+    return { boardId: board.id.toString() };
   }
 }

@@ -115,7 +115,7 @@ export class BoardService {
       image = await this.imageService.saveIcon(updateBoardDto.icon);
     }
 
-    await this.prisma.board.update({
+    return this.prisma.board.update({
       where: { id },
       data: {
         title: updateBoardDto.title ? updateBoardDto.title : board.title,
@@ -131,7 +131,7 @@ export class BoardService {
     ]);
 
     // 삭제
-    await this.prisma.board.update({
+    return this.prisma.board.update({
       where: { id: id },
       data: { logicDelete: true },
     });
