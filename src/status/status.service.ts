@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { CreateStatusDto } from './dto/create-status.dto';
 import { UpdateStatusDto } from './dto/update-status.dto';
 import { PrismaService } from '../common/prisma.service';
-import { AuthService } from '../auth/auth.service';
 import { BoardService } from '../board/board.service';
 import { JwtUserInfo } from '../auth/decorator/user.decorator';
 import {
@@ -38,7 +37,6 @@ const color = {
 export class StatusService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly authService: AuthService,
     private readonly boardService: BoardService,
   ) {}
 
@@ -48,8 +46,7 @@ export class StatusService {
     createStatusDto: CreateStatusDto,
   ) {
     await Promise.all([
-      this.authService.validateRequestUser(jwtUserInfo),
-      this.boardService.validateBoard(boardId, jwtUserInfo),
+      this.boardService.validateBoardUserRelation(boardId, jwtUserInfo),
       this.validateStatusGroup(createStatusDto.group),
     ]);
     const lastStatus = await this.prisma.status.findFirst({
@@ -75,9 +72,8 @@ export class StatusService {
     jwtUserInfo: JwtUserInfo,
     updateStatusDto: UpdateStatusDto,
   ) {
-    const [, , status] = await Promise.all([
-      this.authService.validateRequestUser(jwtUserInfo),
-      this.boardService.validateBoard(boardId, jwtUserInfo),
+    const [, status] = await Promise.all([
+      this.boardService.validateBoardUserRelation(boardId, jwtUserInfo),
       this.validateStatus(boardId, id),
       this.validateStatusColor(updateStatusDto.color),
       this.validateStatusGroup(updateStatusDto.group),
@@ -229,8 +225,7 @@ export class StatusService {
 
   async remove(boardId: number, id: number, jwtUserInfo: JwtUserInfo) {
     await Promise.all([
-      this.authService.validateRequestUser(jwtUserInfo),
-      this.boardService.validateBoard(boardId, jwtUserInfo),
+      this.boardService.validateBoardUserRelation(boardId, jwtUserInfo),
       this.validateStatus(boardId, id),
     ]);
 

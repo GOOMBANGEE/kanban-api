@@ -18,22 +18,35 @@ model User {
   logicDelete  Boolean  @default(false) @map("logic_delete")
   role         String?
 
-  Board Board[]
+  Board             Board[]
+  BoardUserRelation BoardUserRelation[]
 }
 
 model Board {
   id          BigInt  @id @default(autoincrement())
   title       String
-  inviteCode  String? @map("invite_code")
+  inviteCode  String? @unique @map("invite_code")
   icon        String?
   logicDelete Boolean @default(false) @map("logic_delete")
 
   userId BigInt @map("user_id")
   user   User   @relation(fields: [userId], references: [id])
 
-  Status Status[]
-  Ticket Ticket[]
+  Status            Status[]
+  Ticket            Ticket[]
+  BoardUserRelation BoardUserRelation[]
 
+  @@index([userId])
+}
+
+model BoardUserRelation {
+  boardId BigInt @map("board_id")
+  board   Board  @relation(fields: [boardId], references: [id])
+  userId  BigInt @map("user_id")
+  user    User   @relation(fields: [userId], references: [id])
+
+  @@id([boardId, userId])
+  @@index([boardId])
   @@index([userId])
 }
 

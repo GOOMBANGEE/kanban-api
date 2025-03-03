@@ -25,14 +25,14 @@ export class WebsocketGateway {
 
   @UseGuards(AccessWsGuard)
   @SubscribeMessage('board')
-  async enterBoard(
+  async joinBoard(
     @WsUser() wsUser: JwtUserInfo,
     @ConnectedSocket() socket: Socket,
     @MessageBody() data: { id: number },
   ) {
     // 들어온 유저가 board에 접근가능한지 검증
     const boardId = JSON.parse(JSON.stringify(data));
-    await this.boardService.validateBoard(boardId, wsUser);
+    await this.boardService.validateBoardUserRelation(boardId, wsUser);
 
     socket.join(boardId);
     return boardId;

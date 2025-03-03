@@ -46,6 +46,7 @@ export class BoardController {
     return this.boardService.boardList(page, jwtUserInfo);
   }
 
+  // api/board/:id
   @Get(':id')
   findOne(
     @Param('id', ParseIntPipe) id: number,
@@ -89,5 +90,80 @@ export class BoardController {
       message: board.id,
     });
     return { boardId: board.id.toString() };
+  }
+
+  // api/board/:id/invite
+  @Get(':id/invite')
+  invite(
+    @Param('id', ParseIntPipe) id: number,
+    @RequestUser() jwtUserInfo: JwtUserInfo,
+  ) {
+    return this.boardService.invite(id, jwtUserInfo, false);
+  }
+
+  // api/board/:id/invite/regenerate
+  @Get(':id/invite/regenerate')
+  inviteRegenerate(
+    @Param('id', ParseIntPipe) id: number,
+    @RequestUser() jwtUserInfo: JwtUserInfo,
+  ) {
+    return this.boardService.invite(id, jwtUserInfo, true);
+  }
+
+  // api/board/:id/:inviteCode
+  @Get(':id/:inviteCode')
+  checkInviteCode(
+    @Param('id', ParseIntPipe) id: number,
+    @Param('inviteCode') inviteCode: string,
+    @RequestUser() jwtUserInfo: JwtUserInfo,
+  ) {
+    return this.boardService.checkInviteCode(id, inviteCode, jwtUserInfo);
+  }
+
+  // api/board/:id/:inviteCode
+  @Post(':id/:inviteCode')
+  async join(
+    @Param('id', ParseIntPipe) id: number,
+    @Param('inviteCode') inviteCode: string,
+    @RequestUser() jwtUserInfo: JwtUserInfo,
+  ) {
+    await this.boardService.join(id, inviteCode, jwtUserInfo);
+
+    this.websocketGateway.sendBoardMessage({
+      boardId: id,
+      userId: jwtUserInfo.id,
+      message: jwtUserInfo.id,
+    });
+  }
+
+  // api/board/:id/kick?userId=number
+  @Delete(':id/kick')
+  async kick(
+    @Param('id', ParseIntPipe) id: number,
+    @Query('userId') userId: number,
+    @RequestUser() jwtUserInfo: JwtUserInfo,
+  ) {
+    await this.boardService.kick(id, jwtUserInfo, userId);
+
+    this.websocketGateway.sendBoardMessage({
+      boardId: id,
+      userId: jwtUserInfo.id,
+      message: userId,
+    });
+  }
+
+  // api/board/:id/leave
+  @Delete(':id/leave')
+  async leave(
+    @Param('id', ParseIntPipe) id: number,
+    @RequestUser() jwtUserInfo: JwtUserInfo,
+  ) {
+    await this.boardService.leave(id, jwtUserInfo);
+
+    this.websocketGateway.sendBoardMessage({
+      boardId: id,
+      userId: jwtUserInfo.id,
+      message: jwtUserInfo.id,
+    });
   }
 }
