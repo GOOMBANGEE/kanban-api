@@ -13,6 +13,13 @@ export class ImageService {
   constructor(private readonly configService: ConfigService) {
     this.baseUrl = this.configService.get(envKey.baseUrl);
     this.imagePath = path.join(this.configService.get(envKey.imagePath));
+
+    // 이미지 저장 디렉토리 없으면 생성
+    if (!fs.existsSync(path.join(__dirname, '..', this.imagePath))) {
+      fs.mkdirSync(path.join(__dirname, '..', this.imagePath), {
+        recursive: true,
+      });
+    }
   }
 
   // base64 가져와서 image 저장
@@ -26,10 +33,10 @@ export class ImageService {
 
     // 파일명 생성 및 저장
     const filename = `${uuidV1()}-${Date.now()}.${extension}`;
-    const filePath = path.join(__dirname, this.imagePath, filename);
+    const filePath = path.join(__dirname, '..', this.imagePath, filename);
     await fs.promises.writeFile(filePath, buffer);
 
-    const imageUrl = `${this.baseUrl}/${this.imagePath}/${filename}`;
+    const imageUrl = `${this.imagePath}/${filename}`;
     return { imageUrl };
   }
 }
