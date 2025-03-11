@@ -25,7 +25,10 @@ export class BoardService {
 
     // icon 추가로직
     // 파일로 추가한 다음 파일경로만 db에 저장
-    const image = await this.imageService.saveIcon(createBoardDto.icon);
+    let image = null;
+    if (createBoardDto.icon) {
+      image = await this.imageService.saveIcon(createBoardDto.icon);
+    }
 
     // board 생성
     let board: {
@@ -40,7 +43,7 @@ export class BoardService {
       board = await tx.board.create({
         data: {
           title: createBoardDto.title,
-          icon: image.imageUrl,
+          icon: image ? image.imageUrl : null,
           userId: user.id,
         },
       });
@@ -136,9 +139,8 @@ export class BoardService {
     return this.prisma.board.update({
       where: { id },
       data: {
-        title: updateBoardDto.title
-          ? updateBoardDto.title
-          : boardInfo.board.title,
+        ...boardInfo.board,
+        ...updateBoardDto,
         icon: image ? image.imageUrl : null,
       },
     });
