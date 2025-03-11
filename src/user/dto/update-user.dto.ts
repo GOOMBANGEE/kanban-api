@@ -4,7 +4,7 @@ import { VALIDATION_ERROR } from '../../common/exception/valid.exception';
 export class UpdateUserDto {
   @IsOptional()
   @Length(2, 20, { message: VALIDATION_ERROR.USERNAME_ERROR })
-  username: string;
+  newUsername: string;
 
   @IsOptional()
   @Matches(/^(?=.*[a-zA-Z])(?=.*[!@#$%^*+=-])(?=.*\d).{8,20}$/, {
@@ -16,11 +16,11 @@ export class UpdateUserDto {
   @Matches(/^(?=.*[a-zA-Z])(?=.*[!@#$%^*+=-])(?=.*\d).{8,20}$/, {
     message: VALIDATION_ERROR.PASSWORD_ERROR,
   })
-  password: string;
+  newPassword: string;
 
   @IsOptional()
   @Matches(/^(?=.*[a-zA-Z])(?=.*[!@#$%^*+=-])(?=.*\d).{8,20}$/, {
     message: VALIDATION_ERROR.PASSWORD_ERROR,
   })
-  confirmPassword: string;
+  newConfirmPassword: string;
 }

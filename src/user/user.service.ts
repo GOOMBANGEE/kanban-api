@@ -31,7 +31,7 @@ export class UserService {
   ) {
     const user = await this.authService.validateRequestUser(jwtUserInfo);
     // username update
-    const username = updateUserDto.username;
+    const username = updateUserDto.newUsername;
     if (username) {
       // username 중복체크
       if (await this.prisma.user.findUnique({ where: { username } })) {
@@ -46,8 +46,8 @@ export class UserService {
 
     // password update
     const prevPassword = updateUserDto.prevPassword;
-    const password = updateUserDto.password;
-    const confirmPassword = updateUserDto.confirmPassword;
+    const password = updateUserDto.newPassword;
+    const confirmPassword = updateUserDto.newConfirmPassword;
 
     if (prevPassword && password) {
       if (!(await bcrypt.compare(prevPassword, user.password))) {
@@ -85,6 +85,9 @@ export class UserService {
     if (!user) throw new UserException(USER_ERROR.UNREGISTERED);
 
     response.clearCookie(this.refreshTokenKey);
-    await this.prisma.user.delete({ where: { id: user.id } });
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { logicDelete: true },
+    });
   }
 }
