@@ -121,7 +121,7 @@ export class BoardService {
   }
 
   async findOne(id: number, jwtUserInfo: JwtUserInfo) {
-    await this.validateBoardUserRelation(id, jwtUserInfo);
+    const boardInfo = await this.validateBoardUserRelation(id, jwtUserInfo);
 
     const [statusList, userList] = await this.prisma.$transaction([
       this.prisma.status.findMany({
@@ -138,6 +138,7 @@ export class BoardService {
               displayOrder: true,
               statusId: true,
             },
+            where: { logicDelete: false },
           },
         },
         where: { boardId: id, logicDelete: false },
@@ -148,7 +149,7 @@ export class BoardService {
       }),
     ]);
 
-    return { statusList, userList };
+    return { board: boardInfo.board, statusList, userList };
   }
 
   async update(

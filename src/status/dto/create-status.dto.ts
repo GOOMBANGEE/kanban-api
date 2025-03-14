@@ -6,6 +6,10 @@ export class CreateStatusDto {
   @IsNotEmpty({ message: VALIDATION_ERROR.TITLE_ERROR })
   title: string;
 
+  @IsString({ message: VALIDATION_ERROR.COLOR_ERROR })
+  @IsNotEmpty({ message: VALIDATION_ERROR.COLOR_ERROR })
+  color: string;
+
   @IsString({ message: VALIDATION_ERROR.GROUP_ERROR })
   @IsNotEmpty({ message: VALIDATION_ERROR.GROUP_ERROR })
   group: string;
