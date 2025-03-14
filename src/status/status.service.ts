@@ -13,25 +13,7 @@ import {
   ValidException,
 } from '../common/exception/valid.exception';
 import { Status } from '@prisma/client';
-
-const group = {
-  todo: 'todo',
-  inProgress: 'inProgress',
-  complete: 'complete',
-};
-
-const color = {
-  black: 'black',
-  gray: 'gray',
-  brown: 'brown',
-  orange: 'orange',
-  yellow: 'yellow',
-  green: 'green',
-  blue: 'blue',
-  purple: 'purple',
-  pink: 'pink',
-  red: 'red',
-};
+import { statusColor, statusGroup } from './status.constants';
 
 @Injectable()
 export class StatusService {
@@ -58,7 +40,7 @@ export class StatusService {
     return this.prisma.status.create({
       data: {
         title: createStatusDto.title,
-        color: color.black,
+        color: createStatusDto.color,
         displayOrder: lastStatus ? lastStatus.displayOrder * 2 : 1024.0,
         boardId: boardId,
         group: createStatusDto.group,
@@ -236,7 +218,7 @@ export class StatusService {
   }
 
   async validateStatusColor(checkColor: string) {
-    if (checkColor && !Object.values(color).includes(checkColor)) {
+    if (checkColor && !Object.values(statusColor).includes(checkColor)) {
       throw new ValidException([
         {
           property: checkColor,
@@ -246,7 +228,7 @@ export class StatusService {
     }
   }
   async validateStatusGroup(checkGroup: string) {
-    if (checkGroup && !Object.values(group).includes(checkGroup)) {
+    if (checkGroup && !Object.values(statusGroup).includes(checkGroup)) {
       throw new ValidException([
         {
           property: checkGroup,

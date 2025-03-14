@@ -10,6 +10,8 @@ import {
 } from '../common/exception/board.exception';
 import { ImageService } from '../common/image.service';
 import { v1 as uuidV1 } from 'uuid';
+import { Status } from '@prisma/client';
+import { statusColor, statusGroup } from '../status/status.constants';
 
 @Injectable()
 export class BoardService {
@@ -50,6 +52,33 @@ export class BoardService {
       await tx.boardUserRelation.create({
         data: { boardId: board.id, userId: user.id },
       });
+    });
+
+    const defaultStatus: Omit<Status, 'id' | 'logicDelete'>[] = [
+      {
+        title: 'Not started',
+        color: statusColor.black,
+        displayOrder: 1024.0,
+        boardId: board.id,
+        group: statusGroup.todo,
+      },
+      {
+        title: 'In progress',
+        color: statusColor.blue,
+        displayOrder: 2048.0,
+        boardId: board.id,
+        group: statusGroup.inProgress,
+      },
+      {
+        title: 'Done',
+        color: statusColor.green,
+        displayOrder: 4096.0,
+        boardId: board.id,
+        group: statusGroup.complete,
+      },
+    ];
+    await this.prisma.status.createMany({
+      data: defaultStatus,
     });
 
     // board 아이디 반환

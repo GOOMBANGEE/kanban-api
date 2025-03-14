@@ -49,7 +49,7 @@ export class StatusController {
     return { status };
   }
 
-  // /api/status/:id
+  // /api/status/:boardId/:id
   @Patch(':boardId/:id')
   async update(
     @Param('boardId', ParseIntPipe) boardId: number,
