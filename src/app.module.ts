@@ -28,10 +28,10 @@ import { WebsocketModule } from './websocket/websocket.module';
         FRONTEND_URL: Joi.string().required(),
         SENTRY_DSN: Joi.string().required(),
 
-        IMAGE_PATH: Joi.string().required(),
-
-        ACTIVATION_CODE_LENGTH: Joi.number().required(),
         SALT_OR_ROUNDS: Joi.number().required(),
+
+        INVITE_CODE_LENGTH: Joi.number().required(),
+        IMAGE_PATH: Joi.string().required(),
 
         JWT_ACCESS_TOKEN_KEY: Joi.string().required(),
         JWT_ACCESS_TOKEN_EXPIRES: Joi.number().required(),

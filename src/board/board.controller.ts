@@ -46,6 +46,15 @@ export class BoardController {
     return this.boardService.boardList(page, jwtUserInfo);
   }
 
+  // api/board/invite/:inviteCode
+  @Get('invite/:inviteCode')
+  checkInviteCode(
+    @Param('inviteCode') inviteCode: string,
+    @RequestUser() jwtUserInfo: JwtUserInfo,
+  ) {
+    return this.boardService.checkInviteCode(inviteCode, jwtUserInfo);
+  }
+
   // api/board/:id
   @Get(':id')
   findOne(
@@ -110,14 +119,12 @@ export class BoardController {
     return this.boardService.invite(id, jwtUserInfo, true);
   }
 
-  // api/board/:id/:inviteCode
-  @Get(':id/:inviteCode')
-  checkInviteCode(
+  @Delete(':id/invite')
+  deleteInvite(
     @Param('id', ParseIntPipe) id: number,
-    @Param('inviteCode') inviteCode: string,
     @RequestUser() jwtUserInfo: JwtUserInfo,
   ) {
-    return this.boardService.checkInviteCode(id, inviteCode, jwtUserInfo);
+    return this.boardService.deleteInviteCode(id, jwtUserInfo);
   }
 
   // api/board/:id/:inviteCode

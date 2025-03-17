@@ -1,8 +1,8 @@
 const baseUrl = 'BASE_URL';
 const frontUrl = 'FRONT_URL';
-const activationCodeLength = 'ACTIVATION_CODE_LENGTH';
 const saltOrRounds = 'SALT_OR_ROUNDS';
 
+const inviteCodeLength = 'INVITE_CODE_LENGTH';
 const imagePath = 'IMAGE_PATH';
 
 const accessTokenKey = 'JWT_ACCESS_TOKEN_KEY';
@@ -15,9 +15,9 @@ const refreshTokenSecret = 'JWT_REFRESH_TOKEN_SECRET';
 export const envKey = {
   baseUrl,
   frontUrl,
-  activationCodeLength,
   saltOrRounds,
 
+  inviteCodeLength,
   imagePath,
 
   accessTokenKey,

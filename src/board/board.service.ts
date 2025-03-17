@@ -9,17 +9,25 @@ import {
   BoardException,
 } from '../common/exception/board.exception';
 import { ImageService } from '../common/image.service';
-import { v1 as uuidV1 } from 'uuid';
 import { Status } from '@prisma/client';
 import { statusColor, statusGroup } from '../status/status.constants';
+import { ConfigService } from '@nestjs/config';
+import { envKey } from '../common/const/env.const';
 
 @Injectable()
 export class BoardService {
+  private readonly inviteCodeLength;
+  private readonly characters;
   constructor(
     private readonly prisma: PrismaService,
     private readonly authService: AuthService,
     private readonly imageService: ImageService,
-  ) {}
+    private readonly configService: ConfigService,
+  ) {
+    this.inviteCodeLength = this.configService.get(envKey.inviteCodeLength);
+    this.characters =
+      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  }
 
   async create(jwtUserInfo: JwtUserInfo, createBoardDto: CreateBoardDto) {
     // 가입된 유저인지 검증
@@ -104,6 +112,7 @@ export class BoardService {
       select: {
         id: true,
         title: true,
+        inviteCode: true,
         icon: true,
         userId: true,
       },
@@ -112,8 +121,16 @@ export class BoardService {
       },
     });
 
+    const processedBoardList = boardList.map((board) => ({
+      id: board.id,
+      title: board.title,
+      inviteCode: board.userId === user.id ? board.inviteCode : undefined,
+      icon: board.icon,
+      userId: board.userId,
+    }));
+
     return {
-      boardList,
+      boardList: processedBoardList,
       total,
       page,
       totalPage: Math.ceil(total / limit),
@@ -135,7 +152,10 @@ export class BoardService {
             select: {
               id: true,
               title: true,
+              content: true,
               displayOrder: true,
+              startDate: true,
+              endDate: true,
               statusId: true,
             },
             where: { logicDelete: false },
@@ -205,7 +225,11 @@ export class BoardService {
   }
 
   async generateInviteCode() {
-    const inviteCode = uuidV1();
+    const inviteCode = Array.from(
+      { length: this.inviteCodeLength },
+      () => this.characters[Math.floor(Math.random() * this.characters.length)],
+    ).join('');
+
     const existingBoard = await this.prisma.board.findUnique({
       where: { inviteCode },
     });
@@ -215,30 +239,39 @@ export class BoardService {
     return inviteCode;
   }
 
-  async checkInviteCode(
-    id: number,
-    inviteCode: string,
-    jwtUserInfo: JwtUserInfo,
-  ) {
-    const [user, board] = await Promise.all([
-      this.authService.validateRequestUser(jwtUserInfo),
-      this.validateBoardExisting(id),
-    ]);
+  async checkInviteCode(inviteCode: string, jwtUserInfo: JwtUserInfo) {
+    const user = await this.authService.validateRequestUser(jwtUserInfo);
+    const board = await this.prisma.board.findUnique({
+      where: { inviteCode },
+    });
+
     if (board.inviteCode !== inviteCode) {
       throw new BoardException(BOARD_ERROR.INVALID_CODE);
     }
 
     const boardUserRelation = await this.prisma.boardUserRelation.findFirst({
-      where: { boardId: id, userId: user.id },
+      where: { boardId: board.id, userId: user.id },
     });
 
     if (boardUserRelation) {
       throw new BoardException(BOARD_ERROR.ALREADY_PARTICIPANT);
     }
+    return { id: board.id, title: board.title };
+  }
+
+  async deleteInviteCode(id: number, jwtUserInfo: JwtUserInfo) {
+    await this.validateBoardOwner(id, jwtUserInfo);
+    await this.prisma.board.update({
+      select: { inviteCode: true },
+      data: { inviteCode: null },
+      where: {
+        id,
+      },
+    });
   }
 
   async join(id: number, inviteCode: string, jwtUserInfo: JwtUserInfo) {
-    await this.checkInviteCode(id, inviteCode, jwtUserInfo);
+    await this.checkInviteCode(inviteCode, jwtUserInfo);
     await this.prisma.boardUserRelation.create({
       data: { boardId: id, userId: BigInt(jwtUserInfo.id) },
     });
