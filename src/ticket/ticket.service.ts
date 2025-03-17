@@ -73,7 +73,7 @@ export class TicketService {
     jwtUserInfo: JwtUserInfo,
     updateTicketDto: UpdateTicketDto,
   ) {
-    await Promise.all([
+    const [, , ticket] = await Promise.all([
       this.boardService.validateBoardUserRelation(boardId, jwtUserInfo),
       this.statusService.validateStatus(boardId, statusId),
       this.validateTicket(id),
@@ -110,9 +110,10 @@ export class TicketService {
       return;
     }
 
-    if (updateTicketDto.startDate || updateTicketDto.endDate) {
+    if (updateTicketDto.startDate) {
       if (
-        new Date(updateTicketDto.startDate) > new Date(updateTicketDto.endDate)
+        ticket.endDate &&
+        new Date(updateTicketDto.startDate) > new Date(ticket.endDate)
       ) {
         throw new ValidException([
           {
@@ -125,6 +126,27 @@ export class TicketService {
         where: { id },
         data: {
           startDate: new Date(updateTicketDto.startDate),
+          updateTime: new Date(),
+        },
+      });
+      return;
+    }
+
+    if (updateTicketDto.endDate) {
+      if (
+        !ticket.startDate ||
+        new Date(ticket.startDate) > new Date(updateTicketDto.endDate)
+      ) {
+        throw new ValidException([
+          {
+            property: updateTicketDto.startDate,
+            message: VALIDATION_ERROR.DATE_ERROR,
+          },
+        ]);
+      }
+      await this.prisma.ticket.update({
+        where: { id },
+        data: {
           endDate: new Date(updateTicketDto.endDate),
           updateTime: new Date(),
         },

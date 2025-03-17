@@ -15,4 +15,8 @@ export class UpdateStatusDto extends PartialType(CreateStatusDto) {
   @IsOptional()
   @IsNumber({}, { message: VALIDATION_ERROR.DISPLAY_ORDER_ERROR })
   displayOrder: number;
+
+  @IsOptional()
+  @IsString({ message: VALIDATION_ERROR.GROUP_ERROR })
+  group: string;
 }
