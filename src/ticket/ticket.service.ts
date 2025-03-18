@@ -13,6 +13,7 @@ import {
   VALIDATION_ERROR,
   ValidException,
 } from '../common/exception/valid.exception';
+import { Ticket } from '@prisma/client';
 
 @Injectable()
 export class TicketService {
@@ -78,36 +79,17 @@ export class TicketService {
       this.statusService.validateStatus(boardId, statusId),
       this.validateTicket(id),
     ]);
+    const updateData: Record<string, any> = { updateTime: new Date() };
 
-    if (updateTicketDto.title) {
-      await this.prisma.ticket.update({
-        where: { id },
-        data: { title: updateTicketDto.title, updateTime: new Date() },
-      });
-      return;
-    }
-
-    if (updateTicketDto.content) {
-      await this.prisma.ticket.update({
-        where: { id },
-        data: { content: updateTicketDto.content, updateTime: new Date() },
-      });
-      return;
-    }
+    if (updateTicketDto.title) updateData.title = updateTicketDto.title;
+    if (updateTicketDto.content) updateData.content = updateTicketDto.content;
 
     if (updateTicketDto.displayOrder && updateTicketDto.statusId) {
       const ticketList = await this.displayOrderReorder(id, updateTicketDto);
-      if (ticketList) return { ticketList };
+      if (ticketList) return ticketList;
 
-      await this.prisma.ticket.update({
-        where: { id },
-        data: {
-          displayOrder: updateTicketDto.displayOrder,
-          statusId: updateTicketDto.statusId,
-          updateTime: new Date(),
-        },
-      });
-      return;
+      updateData.displayOrder = updateTicketDto.displayOrder;
+      updateData.statusId = updateTicketDto.statusId;
     }
 
     if (updateTicketDto.startDate) {
@@ -122,14 +104,7 @@ export class TicketService {
           },
         ]);
       }
-      await this.prisma.ticket.update({
-        where: { id },
-        data: {
-          startDate: new Date(updateTicketDto.startDate),
-          updateTime: new Date(),
-        },
-      });
-      return;
+      updateData.startDate = new Date(updateTicketDto.startDate);
     }
 
     if (updateTicketDto.endDate) {
@@ -139,24 +114,24 @@ export class TicketService {
       ) {
         throw new ValidException([
           {
-            property: updateTicketDto.startDate,
+            property: updateTicketDto.endDate,
             message: VALIDATION_ERROR.DATE_ERROR,
           },
         ]);
       }
-      await this.prisma.ticket.update({
+      updateData.endDate = new Date(updateTicketDto.endDate);
+    }
+
+    if (Object.keys(updateData).length > 1) {
+      return this.prisma.ticket.update({
         where: { id },
-        data: {
-          endDate: new Date(updateTicketDto.endDate),
-          updateTime: new Date(),
-        },
+        data: updateData,
       });
     }
   }
 
   // displayOrder 재배치 로직
   async displayOrderReorder(id: number, updateTicketDto: UpdateTicketDto) {
-    // 들어온 display order에 대해서 앞 뒤에 해당하는 ticket이 소수점 다섯째자리까지 같은경우 -> 앞뒤의 ticket id 기억
     const [ticketHasLessDisplayOrder, ticketHasGreaterDisplayOrder] =
       await this.prisma.$transaction([
         this.prisma.ticket.findFirst({
@@ -239,7 +214,7 @@ export class TicketService {
         },
       });
 
-      const ticketList = await this.prisma.ticket.findMany({
+      const ticketList: Partial<Ticket>[] = await this.prisma.ticket.findMany({
         select: {
           id: true,
           title: true,
@@ -251,7 +226,7 @@ export class TicketService {
           logicDelete: false,
         },
       });
-      return { ticketList };
+      return ticketList;
     }
   }
 

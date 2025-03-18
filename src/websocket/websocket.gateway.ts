@@ -1,6 +1,7 @@
 import {
   ConnectedSocket,
   MessageBody,
+  OnGatewayConnection,
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
@@ -10,6 +11,7 @@ import { Server, Socket } from 'socket.io';
 import { BoardService } from '../board/board.service';
 import { JwtUserInfo, WsUser } from '../auth/decorator/user.decorator';
 import { AccessWsGuard } from '../auth/guard/access-ws.guard';
+import { Board, Status, Ticket } from '@prisma/client';
 
 @WebSocketGateway({
   cors: {
@@ -18,13 +20,19 @@ import { AccessWsGuard } from '../auth/guard/access-ws.guard';
   namespace: 'ws',
 })
 @Injectable()
-export class WebsocketGateway {
+export class WebsocketGateway implements OnGatewayConnection {
   constructor(private readonly boardService: BoardService) {}
+
   @WebSocketServer()
   public server: Server;
 
+  handleConnection(socket: Socket) {
+    const token = socket.handshake.headers.authorization;
+    if (token) socket.data.accessToken = token;
+  }
+
   @UseGuards(AccessWsGuard)
-  @SubscribeMessage('board')
+  @SubscribeMessage('joinBoard')
   async joinBoard(
     @WsUser() wsUser: JwtUserInfo,
     @ConnectedSocket() socket: Socket,
@@ -38,18 +46,45 @@ export class WebsocketGateway {
     return boardId;
   }
 
-  sendBoardMessage(
-    @MessageBody() data: { boardId: number; userId: string; message: any },
+  sendMessage(
+    @MessageBody()
+    message: {
+      boardId: number;
+      userId: string;
+      data?: any;
+      board?: Board;
+      status?: Status;
+      ticket?: Ticket | Partial<Ticket>[];
+    },
   ) {
-    const message = JSON.parse(
-      JSON.stringify(data, (_, value) =>
+    const serializedMessage = this.serialize(message);
+    const sourceMethod = new Error().stack.split('\n')[2].split(' ')[5];
+
+    const responseMessage = {
+      message: serializedMessage,
+      sourceMethod,
+    };
+
+    this.server
+      .to(message.boardId.toString())
+      .emit('receiveMessage', responseMessage);
+  }
+
+  serialize(message) {
+    return JSON.parse(
+      JSON.stringify(message, (_, value) =>
         typeof value === 'bigint' ? value.toString() : value,
       ),
     );
+  }
 
-    const sourceMethod = new Error().stack.split('\n')[2].split(' ')[5];
-    this.server
-      .to(data.boardId.toString())
-      .emit('receiveMessage', { message, sourceMethod });
+  @SubscribeMessage('leaveBoard')
+  leaveBoard(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() data: { id: number },
+  ) {
+    const boardId = JSON.parse(JSON.stringify(data));
+    socket.leave(boardId);
+    return boardId;
   }
 }

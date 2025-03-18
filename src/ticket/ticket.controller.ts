@@ -17,6 +17,7 @@ import { BigIntInterceptor } from '../common/interceptor/big-int.interceptor';
 import { AccessGuard } from '../auth/guard/access.guard';
 import { JwtUserInfo, RequestUser } from '../auth/decorator/user.decorator';
 import { WebsocketGateway } from '../websocket/websocket.gateway';
+import { Ticket } from '@prisma/client';
 
 @UseInterceptors(BigIntInterceptor)
 @UseGuards(AccessGuard)
@@ -42,13 +43,13 @@ export class TicketController {
       createTicketDto,
     );
 
-    this.websocketGateway.sendBoardMessage({
+    this.websocketGateway.sendMessage({
       boardId: boardId,
       userId: jwtUserInfo.id,
-      message: ticket,
+      ticket: ticket,
     });
 
-    return { ticket };
+    return ticket;
   }
 
   // api/ticket/:boardId/:statusId/:id
@@ -64,20 +65,28 @@ export class TicketController {
 
   // api/ticket/:boardId/:statusId/:id
   @Patch(':boardId/:statusId/:id')
-  update(
+  async update(
     @Param('boardId', ParseIntPipe) boardId: number,
     @Param('statusId', ParseIntPipe) statusId: number,
     @Param('id', ParseIntPipe) id: number,
     @RequestUser() jwtUserInfo: JwtUserInfo,
     @Body() updateTicketDto: UpdateTicketDto,
   ) {
-    return this.ticketService.update(
+    const ticket: Ticket | Partial<Ticket>[] = await this.ticketService.update(
       boardId,
       statusId,
       id,
       jwtUserInfo,
       updateTicketDto,
     );
+
+    this.websocketGateway.sendMessage({
+      boardId: boardId,
+      userId: jwtUserInfo.id,
+      ticket: ticket,
+    });
+
+    return ticket;
   }
 
   // api/ticket/:boardId/:statusId/:id
@@ -95,12 +104,12 @@ export class TicketController {
       jwtUserInfo,
     );
 
-    this.websocketGateway.sendBoardMessage({
+    this.websocketGateway.sendMessage({
       boardId: boardId,
       userId: jwtUserInfo.id,
-      message: ticket,
+      ticket: ticket,
     });
 
-    return { ticket };
+    return ticket;
   }
 }
