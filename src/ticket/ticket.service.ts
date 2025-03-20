@@ -13,7 +13,6 @@ import {
   VALIDATION_ERROR,
   ValidException,
 } from '../common/exception/valid.exception';
-import { Ticket } from '@prisma/client';
 
 @Injectable()
 export class TicketService {
@@ -214,7 +213,7 @@ export class TicketService {
         },
       });
 
-      const ticketList: Partial<Ticket>[] = await this.prisma.ticket.findMany({
+      return this.prisma.ticket.findMany({
         select: {
           id: true,
           title: true,
@@ -226,7 +225,6 @@ export class TicketService {
           logicDelete: false,
         },
       });
-      return ticketList;
     }
   }
 

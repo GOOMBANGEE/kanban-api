@@ -188,7 +188,7 @@ export class StatusService {
         },
       });
 
-      const statusList = await this.prisma.status.findMany({
+      return this.prisma.status.findMany({
         select: {
           id: true,
           title: true,
@@ -201,7 +201,6 @@ export class StatusService {
           logicDelete: false,
         },
       });
-      return { statusList };
     }
   }
 

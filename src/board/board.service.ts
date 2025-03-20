@@ -187,6 +187,7 @@ export class BoardService {
     }
 
     return this.prisma.board.update({
+      select: { id: true, title: true, icon: true },
       where: { id },
       data: {
         ...boardInfo.board,

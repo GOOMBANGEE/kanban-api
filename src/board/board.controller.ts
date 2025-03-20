@@ -18,6 +18,7 @@ import { JwtUserInfo, RequestUser } from '../auth/decorator/user.decorator';
 import { AccessGuard } from '../auth/guard/access.guard';
 import { BigIntInterceptor } from '../common/interceptor/big-int.interceptor';
 import { WebsocketGateway } from '../websocket/websocket.gateway';
+import { Board } from '@prisma/client';
 
 @UseInterceptors(BigIntInterceptor)
 @UseGuards(AccessGuard)
@@ -71,18 +72,19 @@ export class BoardController {
     @RequestUser() jwtUserInfo: JwtUserInfo,
     @Body() updateBoardDto: UpdateBoardDto,
   ) {
-    const board = await this.boardService.update(
+    const board: Partial<Board> = await this.boardService.update(
       id,
       jwtUserInfo,
       updateBoardDto,
     );
 
-    this.websocketGateway.sendBoardMessage({
+    this.websocketGateway.sendMessage({
       boardId: id,
       userId: jwtUserInfo.id,
-      message: board,
+      board: board,
     });
-    return { board };
+
+    return board;
   }
 
   // api/board/:id
@@ -91,13 +93,17 @@ export class BoardController {
     @Param('id', ParseIntPipe) id: number,
     @RequestUser() jwtUserInfo: JwtUserInfo,
   ) {
-    const board = await this.boardService.remove(id, jwtUserInfo);
+    const board: Partial<Board> = await this.boardService.remove(
+      id,
+      jwtUserInfo,
+    );
 
-    this.websocketGateway.sendBoardMessage({
+    this.websocketGateway.sendMessage({
       boardId: id,
       userId: jwtUserInfo.id,
-      message: board.id,
+      board: board,
     });
+
     return { boardId: board.id.toString() };
   }
 
@@ -135,12 +141,6 @@ export class BoardController {
     @RequestUser() jwtUserInfo: JwtUserInfo,
   ) {
     await this.boardService.join(id, inviteCode, jwtUserInfo);
-
-    this.websocketGateway.sendBoardMessage({
-      boardId: id,
-      userId: jwtUserInfo.id,
-      message: jwtUserInfo.id,
-    });
   }
 
   // api/board/:id/kick?userId=number
@@ -151,12 +151,6 @@ export class BoardController {
     @RequestUser() jwtUserInfo: JwtUserInfo,
   ) {
     await this.boardService.kick(id, jwtUserInfo, userId);
-
-    this.websocketGateway.sendBoardMessage({
-      boardId: id,
-      userId: jwtUserInfo.id,
-      message: userId,
-    });
   }
 
   // api/board/:id/leave
@@ -166,11 +160,5 @@ export class BoardController {
     @RequestUser() jwtUserInfo: JwtUserInfo,
   ) {
     await this.boardService.leave(id, jwtUserInfo);
-
-    this.websocketGateway.sendBoardMessage({
-      boardId: id,
-      userId: jwtUserInfo.id,
-      message: jwtUserInfo.id,
-    });
   }
 }

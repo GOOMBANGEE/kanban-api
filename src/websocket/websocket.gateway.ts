@@ -52,8 +52,8 @@ export class WebsocketGateway implements OnGatewayConnection {
       boardId: number;
       userId: string;
       data?: any;
-      board?: Board;
-      status?: Status;
+      board?: Partial<Board>;
+      status?: Status | Partial<Status>[];
       ticket?: Ticket | Partial<Ticket>[];
     },
   ) {

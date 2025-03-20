@@ -16,6 +16,7 @@ import { AccessGuard } from '../auth/guard/access.guard';
 import { BigIntInterceptor } from '../common/interceptor/big-int.interceptor';
 import { JwtUserInfo, RequestUser } from '../auth/decorator/user.decorator';
 import { WebsocketGateway } from '../websocket/websocket.gateway';
+import { Status } from '@prisma/client';
 
 @UseInterceptors(BigIntInterceptor)
 @UseGuards(AccessGuard)
@@ -34,19 +35,19 @@ export class StatusController {
     @RequestUser() jwtUserInfo: JwtUserInfo,
     @Body() createStatusDto: CreateStatusDto,
   ) {
-    const status = await this.statusService.create(
+    const status: Status = await this.statusService.create(
       boardId,
       jwtUserInfo,
       createStatusDto,
     );
 
-    this.websocketGateway.sendBoardMessage({
+    this.websocketGateway.sendMessage({
       boardId: boardId,
       userId: jwtUserInfo.id,
-      message: status,
+      status: status,
     });
 
-    return { status };
+    return status;
   }
 
   // /api/status/:boardId/:id
@@ -57,20 +58,20 @@ export class StatusController {
     @RequestUser() jwtUserInfo: JwtUserInfo,
     @Body() updateStatusDto: UpdateStatusDto,
   ) {
-    const result = await this.statusService.update(
+    const status: Status | Partial<Status>[] = await this.statusService.update(
       boardId,
       id,
       jwtUserInfo,
       updateStatusDto,
     );
 
-    this.websocketGateway.sendBoardMessage({
+    this.websocketGateway.sendMessage({
       boardId: boardId,
       userId: jwtUserInfo.id,
-      message: result,
+      status: status,
     });
 
-    return { result };
+    return status;
   }
 
   // /api/status/:boardId/:id
@@ -80,14 +81,18 @@ export class StatusController {
     @Param('id', ParseIntPipe) id: number,
     @RequestUser() jwtUserInfo: JwtUserInfo,
   ) {
-    const status = await this.statusService.remove(boardId, id, jwtUserInfo);
+    const status: Status = await this.statusService.remove(
+      boardId,
+      id,
+      jwtUserInfo,
+    );
 
-    this.websocketGateway.sendBoardMessage({
+    this.websocketGateway.sendMessage({
       boardId: boardId,
       userId: jwtUserInfo.id,
-      message: status,
+      status: status,
     });
 
-    return { status };
+    return status;
   }
 }
