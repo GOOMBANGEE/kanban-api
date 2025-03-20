@@ -19,6 +19,7 @@ export class RefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
           if (!req.headers.cookie) {
             throw new UserException(USER_ERROR.REFRESH_TOKEN_INVALID);
           }
+
           return req.headers.cookie.split('refreshToken=')[1]; // 쿠키에서 refreshToken 가져옴
         },
       ]),

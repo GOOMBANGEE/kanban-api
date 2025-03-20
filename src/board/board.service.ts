@@ -210,6 +210,7 @@ export class BoardService {
         where: { boardId: id },
       }),
     ]);
+
     return boardInfo.board;
   }
 
@@ -222,6 +223,7 @@ export class BoardService {
     const inviteCode = await this.generateInviteCode();
 
     await this.prisma.board.update({ where: { id }, data: { inviteCode } });
+
     return inviteCode;
   }
 
@@ -237,6 +239,7 @@ export class BoardService {
     if (existingBoard) {
       return this.generateInviteCode();
     }
+
     return inviteCode;
   }
 
@@ -257,6 +260,7 @@ export class BoardService {
     if (boardUserRelation) {
       throw new BoardException(BOARD_ERROR.ALREADY_PARTICIPANT);
     }
+
     return { id: board.id, title: board.title };
   }
 
@@ -289,6 +293,7 @@ export class BoardService {
     await this.prisma.boardUserRelation.deleteMany({
       where: { boardId: boardInfo.board.id, userId },
     });
+
     return userId;
   }
 
@@ -331,7 +336,9 @@ export class BoardService {
       where: { id, logicDelete: false },
     });
 
-    if (!board) throw new BoardException(BOARD_ERROR.BOARD_NOT_FOUND);
+    if (!board) {
+      throw new BoardException(BOARD_ERROR.BOARD_NOT_FOUND);
+    }
 
     return board;
   }
@@ -346,9 +353,12 @@ export class BoardService {
       }),
     ]);
 
-    if (!board) throw new BoardException(BOARD_ERROR.BOARD_NOT_FOUND);
-    if (!boardUserRelation)
+    if (!board) {
+      throw new BoardException(BOARD_ERROR.BOARD_NOT_FOUND);
+    }
+    if (!boardUserRelation) {
       throw new BoardException(BOARD_ERROR.PERMISSION_DENIED);
+    }
 
     return { board, boardUserRelation };
   }
@@ -363,9 +373,12 @@ export class BoardService {
       }),
     ]);
 
-    if (!board) throw new BoardException(BOARD_ERROR.BOARD_NOT_FOUND);
-    if (board.userId !== BigInt(jwtUserInfo.id))
+    if (!board) {
+      throw new BoardException(BOARD_ERROR.BOARD_NOT_FOUND);
+    }
+    if (board.userId !== BigInt(jwtUserInfo.id)) {
       throw new BoardException(BOARD_ERROR.PERMISSION_DENIED);
+    }
 
     return { board, boardUserRelation };
   }

@@ -73,6 +73,7 @@ export class AuthService {
     const { accessToken, accessTokenExpires } =
       await this.generateAccessToken(localUserInfo);
     await this.generateRefreshToken(localUserInfo, response);
+
     return {
       username: registerDto.username,
       accessToken,
@@ -184,6 +185,7 @@ export class AuthService {
         throw new UserException(USER_ERROR.UNREGISTERED);
       }
     }
+
     throw new UserException(USER_ERROR.UNREGISTERED);
   }
 }

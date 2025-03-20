@@ -28,6 +28,7 @@ export class UserController {
     if (!jwtUserInfo || jwtUserInfo.role?.includes('admin')) {
       throw new UserException(USER_ERROR.PERMISSION_DENIED);
     }
+
     return this.userService.update(jwtUserInfo, updateUserDto, response);
   }
 
@@ -41,6 +42,7 @@ export class UserController {
     if (!jwtUserInfo || jwtUserInfo.role?.includes('admin')) {
       throw new UserException(USER_ERROR.PERMISSION_DENIED);
     }
+
     return this.userService.delete(jwtUserInfo, response);
   }
 }

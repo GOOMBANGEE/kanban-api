@@ -43,6 +43,7 @@ export class WebsocketGateway implements OnGatewayConnection {
     await this.boardService.validateBoardUserRelation(boardId, wsUser);
 
     socket.join(boardId);
+
     return boardId;
   }
 
@@ -84,7 +85,9 @@ export class WebsocketGateway implements OnGatewayConnection {
     @MessageBody() data: { id: number },
   ) {
     const boardId = JSON.parse(JSON.stringify(data));
+
     socket.leave(boardId);
+
     return boardId;
   }
 }

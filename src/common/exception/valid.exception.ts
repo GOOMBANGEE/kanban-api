@@ -26,7 +26,9 @@ export class ValidException extends HttpException {
   }
 
   private static getMessage(error: ValidationError[]) {
-    if (!error || error.length === 0) return '알 수 없는 오류';
+    if (!error || error.length === 0) {
+      return '알 수 없는 오류';
+    }
 
     // error: [ { property: 'email', message: 'VALID:EMAIL_ERROR' } ]
     const message = error[0]?.message;

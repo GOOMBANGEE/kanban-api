@@ -72,6 +72,7 @@ export class UserService {
     const { accessToken, accessTokenExpires } =
       await this.authService.generateAccessToken(newUser);
     await this.authService.generateRefreshToken(newUser, response);
+
     return {
       username,
       accessToken,
@@ -82,9 +83,12 @@ export class UserService {
   // /user
   async delete(jwtUserInfo: JwtUserInfo, response: Response) {
     const user = await this.authService.validateRequestUser(jwtUserInfo);
-    if (!user) throw new UserException(USER_ERROR.UNREGISTERED);
+    if (!user) {
+      throw new UserException(USER_ERROR.UNREGISTERED);
+    }
 
     response.clearCookie(this.refreshTokenKey);
+
     await this.prisma.user.update({
       where: { id: user.id },
       data: { logicDelete: true },

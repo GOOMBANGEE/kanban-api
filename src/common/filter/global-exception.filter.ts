@@ -22,6 +22,8 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
     const statusCode = getStatusCode(exception);
     const message = getErrorMessage(exception);
+
+    console.log(exception);
     this.logger.debug(exception);
 
     // Sentry에 예외 전송

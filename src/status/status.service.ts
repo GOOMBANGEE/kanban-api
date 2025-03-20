@@ -60,6 +60,7 @@ export class StatusService {
       this.validateStatusColor(updateStatusDto.color),
       this.validateStatusGroup(updateStatusDto.group),
     ]);
+
     // displayOrder 재배치 로직
     if (updateStatusDto.displayOrder) {
       const statusList = await this.displayOrderReorder(
@@ -68,7 +69,10 @@ export class StatusService {
         updateStatusDto,
         status,
       );
-      if (statusList) return statusList;
+
+      if (statusList) {
+        return statusList;
+      }
     }
 
     const updateData = {
@@ -131,7 +135,10 @@ export class StatusService {
         }),
       ]);
 
-    if (!statusHasLessDisplayOrder || !statusHasGreaterDisplayOrder) return;
+    if (!statusHasLessDisplayOrder || !statusHasGreaterDisplayOrder) {
+      return;
+    }
+
     if (
       Math.trunc(updateStatusDto.displayOrder * 10000) ===
         Math.trunc(statusHasLessDisplayOrder.displayOrder * 10000) ||
@@ -240,7 +247,9 @@ export class StatusService {
     const status = await this.prisma.status.findUnique({
       where: { id, logicDelete: false, boardId },
     });
-    if (!status) throw new StatusException(STATUS_ERROR.STATUS_NOT_FOUND);
+    if (!status) {
+      throw new StatusException(STATUS_ERROR.STATUS_NOT_FOUND);
+    }
 
     return status;
   }

@@ -37,6 +37,7 @@ export class ImageService {
     await fs.promises.writeFile(filePath, buffer);
 
     const imageUrl = `${this.imagePath}/${filename}`;
+
     return { imageUrl };
   }
 }

@@ -80,12 +80,18 @@ export class TicketService {
     ]);
     const updateData: Record<string, any> = { updateTime: new Date() };
 
-    if (updateTicketDto.title) updateData.title = updateTicketDto.title;
-    if (updateTicketDto.content) updateData.content = updateTicketDto.content;
+    if (updateTicketDto.title) {
+      updateData.title = updateTicketDto.title;
+    }
+    if (updateTicketDto.content) {
+      updateData.content = updateTicketDto.content;
+    }
 
     if (updateTicketDto.displayOrder && updateTicketDto.statusId) {
       const ticketList = await this.displayOrderReorder(id, updateTicketDto);
-      if (ticketList) return ticketList;
+      if (ticketList) {
+        return ticketList;
+      }
 
       updateData.displayOrder = updateTicketDto.displayOrder;
       updateData.statusId = updateTicketDto.statusId;
@@ -164,7 +170,10 @@ export class TicketService {
         }),
       ]);
 
-    if (!ticketHasLessDisplayOrder || !ticketHasGreaterDisplayOrder) return;
+    if (!ticketHasLessDisplayOrder || !ticketHasGreaterDisplayOrder) {
+      return;
+    }
+
     if (
       Math.trunc(updateTicketDto.displayOrder * 10000) ===
         Math.trunc(ticketHasLessDisplayOrder.displayOrder * 10000) ||
@@ -250,7 +259,10 @@ export class TicketService {
     const ticket = await this.prisma.ticket.findUnique({
       where: { id, logicDelete: false },
     });
-    if (!ticket) throw new TicketException(TICKET_ERROR.TICKET_NOT_FOUND);
+    if (!ticket) {
+      throw new TicketException(TICKET_ERROR.TICKET_NOT_FOUND);
+    }
+
     return ticket;
   }
 }
