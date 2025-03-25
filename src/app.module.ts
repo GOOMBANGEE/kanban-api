@@ -16,6 +16,7 @@ import { StatusModule } from './status/status.module';
 import { TicketModule } from './ticket/ticket.module';
 import { WebsocketModule } from './websocket/websocket.module';
 import { CacheModule } from '@nestjs/cache-manager';
+import { createKeyv } from '@keyv/redis';
 
 @Module({
   imports: [
@@ -42,9 +43,23 @@ import { CacheModule } from '@nestjs/cache-manager';
         JWT_REFRESH_TOKEN_SECRET: Joi.string().required(),
       }),
     }),
-    CacheModule.register({
+    CacheModule.registerAsync({
       isGlobal: true,
+      useFactory: async () => {
+        const keyv = createKeyv('redis://localhost:6379', {
+          namespace: 'test',
+          keyPrefixSeparator: ':',
+        });
+
+        // connection test
+        // await keyv.set('connectionTest', 'success');
+        // console.log(await keyv.get('connectionTest'));
+        // console.log(keyv);
+
+        return { stores: [keyv] };
+      },
     }),
+
     SentryModule.forRoot(),
     WinstonModule.forRoot({
       transports: [

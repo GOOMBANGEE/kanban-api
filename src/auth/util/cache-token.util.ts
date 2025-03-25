@@ -1,10 +1,10 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Injectable } from '@nestjs/common';
 import { JwtUserInfo } from '../decorator/user.decorator';
+import { Cache } from '@nestjs/cache-manager';
 
 @Injectable()
 export class CacheTokenUtil {
-  constructor(@Inject(CACHE_MANAGER) private readonly cacheManager: Cache) {}
+  constructor(private readonly cacheManager: Cache) {}
 
   async cacheToken(payload: JwtUserInfo, cacheKey: string) {
     const cache = await this.cacheManager.get(cacheKey);

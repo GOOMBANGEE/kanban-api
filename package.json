@@ -21,6 +21,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@keyv/redis": "^4.3.2",
     "@nestjs/cache-manager": "^3.0.0",
     "@nestjs/common": "^11.0.10",
     "@nestjs/config": "^4.0.0",
