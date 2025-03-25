@@ -15,6 +15,7 @@ import { BoardModule } from './board/board.module';
 import { StatusModule } from './status/status.module';
 import { TicketModule } from './ticket/ticket.module';
 import { WebsocketModule } from './websocket/websocket.module';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   imports: [
@@ -40,6 +41,9 @@ import { WebsocketModule } from './websocket/websocket.module';
         JWT_REFRESH_TOKEN_EXPIRES: Joi.number().required(),
         JWT_REFRESH_TOKEN_SECRET: Joi.string().required(),
       }),
+    }),
+    CacheModule.register({
+      isGlobal: true,
     }),
     SentryModule.forRoot(),
     WinstonModule.forRoot({
