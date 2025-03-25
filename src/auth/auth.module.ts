@@ -7,6 +7,7 @@ import { AuthService } from './auth.service';
 import { LocalStrategy } from './strategy/local.strategy';
 import { AccessStrategy } from './strategy/access.strategy';
 import { RefreshStrategy } from './strategy/refresh.strategy';
+import { CacheTokenUtil } from './util/cache-token.util';
 
 @Module({
   imports: [CommonModule, PassportModule, JwtModule],
@@ -17,6 +18,7 @@ import { RefreshStrategy } from './strategy/refresh.strategy';
     JwtService,
     AccessStrategy,
     RefreshStrategy,
+    CacheTokenUtil,
   ],
   exports: [AuthService, LocalStrategy, AccessStrategy, RefreshStrategy],
 })
