@@ -15,6 +15,7 @@ kanban-api
 | WebSocket                               | npm i @nestjs/platform-socket.io @nestjs/websockets socket.io                                                                                              |
 | Caching                                 | npm i @nestjs/cache-manager cache-manager                                                                                                                  |
 | Redis Integration                       | npm i   @keyv/redis                                                                                                                                        |
+| Rate Limiting                           | npm i  @nestjs/throttler                                                                                                                                   |
 
 ## Project setup
 \>= Node.js 20

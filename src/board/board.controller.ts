@@ -19,9 +19,11 @@ import { AccessGuard } from '../auth/guard/access.guard';
 import { BigIntInterceptor } from '../common/interceptor/big-int.interceptor';
 import { WebsocketGateway } from '../websocket/websocket.gateway';
 import { Board } from '@prisma/client';
+import { Throttle } from '@nestjs/throttler';
 
 @UseInterceptors(BigIntInterceptor)
 @UseGuards(AccessGuard)
+@Throttle({ default: { limit: 2, ttl: 1000 } })
 @Controller('api/board')
 export class BoardController {
   constructor(

@@ -19,7 +19,9 @@ import {
 import { Response } from 'express';
 import { AccessGuard } from './guard/access.guard';
 import { LocalGuard } from './guard/local.guard';
+import { Throttle } from '@nestjs/throttler';
 
+@Throttle({ default: { limit: 3, ttl: 1000 } })
 @Controller('api/auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -50,6 +52,7 @@ export class AuthController {
   // return: {id, username, accessToken, accessTokenExpire}
   @Get('refresh')
   @UseGuards(RefreshGuard)
+  @Throttle({ default: { limit: 2, ttl: 10000 } })
   @HttpCode(HttpStatus.OK)
   async refresh(
     @RequestUser() jwtUserInfo: JwtUserInfo,

@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { APP_FILTER } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { SentryModule } from '@sentry/nestjs/setup';
 import * as Joi from 'joi';
 import { WinstonModule } from 'nest-winston';
@@ -17,6 +17,7 @@ import { TicketModule } from './ticket/ticket.module';
 import { WebsocketModule } from './websocket/websocket.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import { createKeyv } from '@keyv/redis';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { envKey } from './common/const/env.const';
 
 @Module({
@@ -66,7 +67,14 @@ import { envKey } from './common/const/env.const';
         return { stores: [keyv] };
       },
     }),
-
+    ThrottlerModule.forRoot({
+      throttlers: [
+        {
+          ttl: 0,
+          limit: Number.MAX_SAFE_INTEGER,
+        },
+      ],
+    }),
     SentryModule.forRoot(),
     WinstonModule.forRoot({
       transports: [
@@ -106,6 +114,10 @@ import { envKey } from './common/const/env.const';
     {
       provide: APP_FILTER,
       useClass: GlobalExceptionFilter,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
     },
   ],
 })

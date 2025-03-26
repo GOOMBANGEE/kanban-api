@@ -12,9 +12,11 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { Response } from 'express';
 import { AccessGuard } from '../auth/guard/access.guard';
 import { USER_ERROR, UserException } from '../common/exception/user.exception';
+import { Throttle } from '@nestjs/throttler';
 
 @Controller('api/user')
 @UseGuards(AccessGuard)
+@Throttle({ default: { limit: 2, ttl: 1000 } })
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
