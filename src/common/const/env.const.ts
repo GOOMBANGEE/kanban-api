@@ -1,3 +1,5 @@
+const redisUrl = 'REDIS_URL';
+const redisNamespace = 'REDIS_NAMESPACE';
 const baseUrl = 'BASE_URL';
 const frontUrl = 'FRONT_URL';
 const saltOrRounds = 'SALT_OR_ROUNDS';
@@ -13,6 +15,8 @@ const refreshTokenExpires = 'JWT_REFRESH_TOKEN_EXPIRES';
 const refreshTokenSecret = 'JWT_REFRESH_TOKEN_SECRET';
 
 export const envKey = {
+  redisUrl,
+  redisNamespace,
   baseUrl,
   frontUrl,
   saltOrRounds,

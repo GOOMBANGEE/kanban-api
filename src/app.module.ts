@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER } from '@nestjs/core';
 import { SentryModule } from '@sentry/nestjs/setup';
 import * as Joi from 'joi';
@@ -17,6 +17,7 @@ import { TicketModule } from './ticket/ticket.module';
 import { WebsocketModule } from './websocket/websocket.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import { createKeyv } from '@keyv/redis';
+import { envKey } from './common/const/env.const';
 
 @Module({
   imports: [
@@ -26,6 +27,8 @@ import { createKeyv } from '@keyv/redis';
       validationSchema: Joi.object({
         PORT: Joi.number().default(3000).required(),
         DB_URL: Joi.string().required(),
+        REDIS_URL: Joi.string().required(),
+        REDIS_NAMESPACE: Joi.string(),
         BASE_URL: Joi.string().required(),
         FRONTEND_URL: Joi.string().required(),
         SENTRY_DSN: Joi.string().required(),
@@ -45,9 +48,13 @@ import { createKeyv } from '@keyv/redis';
     }),
     CacheModule.registerAsync({
       isGlobal: true,
-      useFactory: async () => {
-        const keyv = createKeyv('redis://localhost:6379', {
-          namespace: 'test',
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => {
+        const redisUrl = configService.get(envKey.redisUrl);
+        const redisNamespace = configService.get(envKey.redisNamespace);
+
+        const keyv = createKeyv(redisUrl, {
+          namespace: redisNamespace,
           keyPrefixSeparator: ':',
         });
 

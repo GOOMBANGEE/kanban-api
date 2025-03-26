@@ -13,6 +13,8 @@ kanban-api
 | Configuration Management and Validation | npm i @nestjs/config joi                                                                                                                                   |
 | Authentication                          | npm i @nestjs/passport @nestjs/jwt passport passport-jwt passport-local bcrypt<br/> npm install -D @types/passport-local @types/passport-jwt @types/bcrypt |
 | WebSocket                               | npm i @nestjs/platform-socket.io @nestjs/websockets socket.io                                                                                              |
+| Caching                                 | npm i @nestjs/cache-manager cache-manager                                                                                                                  |
+| Redis Integration                       | npm i   @keyv/redis                                                                                                                                        |
 
 ## Project setup
 \>= Node.js 20
