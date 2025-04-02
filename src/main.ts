@@ -12,7 +12,7 @@ declare const module: any; // hot reload | webpack 설정
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule); // 이미지 파일 제공
-  app.useStaticAssets(join(__dirname, 'image'), {
+  app.useStaticAssets(join(__dirname, '../image'), {
     prefix: '/image', // http://localhost:3000/{prefix}/file 접근시 api가 아닌 static으로 접근 가능
   });
   app.use(json({ limit: '50mb' }));

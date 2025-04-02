@@ -13,14 +13,26 @@ import {
   VALIDATION_ERROR,
   ValidException,
 } from '../common/exception/valid.exception';
+import { ImageService } from '../common/image.service';
+import * as path from 'node:path';
+import { ConfigService } from '@nestjs/config';
+import { envKey } from '../common/const/env.const';
 
 @Injectable()
 export class TicketService {
+  private readonly baseUrl: string;
+  private readonly imagePath: string;
+
   constructor(
     private readonly prisma: PrismaService,
+    private readonly configService: ConfigService,
+    private readonly imageService: ImageService,
     private readonly boardService: BoardService,
     private readonly statusService: StatusService,
-  ) {}
+  ) {
+    this.baseUrl = this.configService.get(envKey.baseUrl);
+    this.imagePath = path.join(this.configService.get(envKey.imagePath));
+  }
   async create(
     boardId: number,
     statusId: number,
@@ -31,7 +43,6 @@ export class TicketService {
       this.boardService.validateBoardUserRelation(boardId, jwtUserInfo),
       this.statusService.validateStatus(boardId, statusId),
     ]);
-
     const lastTicket = await this.prisma.ticket.findFirst({
       select: {
         id: true,
@@ -51,6 +62,41 @@ export class TicketService {
     });
   }
 
+  // html -> image -> base64 순서로 이미지 정보 가져온 후 base64를 서버에 저장된 이미지 경로인 imageUrl로 수정
+  async replaceBase64InHtml(htmlContent: string) {
+    const imgRegex =
+      /<img[^>]+src=["'](data:image\/[a-zA-Z]+;base64,[^"']+)["'][^>]*>/g;
+    let updateHtml = htmlContent;
+    const promiseList: Promise<{ imgTag: string; newTag: string }>[] = [];
+
+    const matchList = [...htmlContent.matchAll(imgRegex)];
+    matchList.forEach((match) => {
+      // imgTag = <img src="~"/>
+      // base64 = data:image/{extension};base64~
+      const [imgTag, base64] = match;
+      // base64Match => divide extension and data
+      const base64Match = RegExp(/^data:image\/([a-zA-Z]+);base64,(.+)$/).exec(
+        base64,
+      );
+
+      promiseList.push(
+        this.imageService.saveContentImage(base64Match).then((image) => {
+          // 클라이언트에서 접근할 이미지 경로
+          // const imageUrl = `${this.baseUrl}/${this.imagePath}/${image.filename}`;
+          const imageUrl = `${this.baseUrl}/${this.imagePath}/${image.filename}`;
+          return { imgTag, newTag: imgTag.replace(base64, imageUrl) };
+        }),
+      );
+    });
+
+    const replaceList = await Promise.all(promiseList);
+    replaceList.forEach(({ imgTag, newTag }) => {
+      // html 태그안의 img src="{base64Data}" 에서 base64Data 부분을 imageUrl 로 변경
+      updateHtml = updateHtml.replace(imgTag, newTag);
+    });
+
+    return updateHtml;
+  }
   async findOne(
     boardId: number,
     statusId: number,
@@ -84,7 +130,9 @@ export class TicketService {
       updateData.title = updateTicketDto.title;
     }
     if (updateTicketDto.content) {
-      updateData.content = updateTicketDto.content;
+      updateData.content = await this.replaceBase64InHtml(
+        updateTicketDto.content,
+      );
     }
 
     if (updateTicketDto.displayOrder && updateTicketDto.statusId) {
