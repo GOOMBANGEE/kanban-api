@@ -4,18 +4,18 @@ kanban-api
 
 ## Package List
 
-| Feature                                 | Installation Command                                                                                                                                       |
-|:----------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Validation                              | npm i class-validator class-transformer                                                                                                                    |
-| Database Integration                    | npm i @prisma/client pg<br/> npm install -D prisma                                                                                                         |
-| Logging                                 | npm i nest-winston winston <br/> npm install -D @types/winston                                                                                             |
-| Error Tracking                          | npm i @sentry/nestjs @sentry/profiling-node                                                                                                                |
-| Configuration Management and Validation | npm i @nestjs/config joi                                                                                                                                   |
-| Authentication                          | npm i @nestjs/passport @nestjs/jwt passport passport-jwt passport-local bcrypt<br/> npm install -D @types/passport-local @types/passport-jwt @types/bcrypt |
-| WebSocket                               | npm i @nestjs/platform-socket.io @nestjs/websockets socket.io                                                                                              |
-| Caching                                 | npm i @nestjs/cache-manager cache-manager                                                                                                                  |
-| Redis Integration                       | npm i   @keyv/redis                                                                                                                                        |
-| Rate Limiting                           | npm i  @nestjs/throttler                                                                                                                                   |
+| Feature                                 | Package                                                                                                                               |
+|:----------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------|
+| Authentication                          | @nestjs/passport @nestjs/jwt passport passport-jwt passport-local bcrypt<br/> @types/passport-local @types/passport-jwt @types/bcrypt |
+| Caching                                 | @nestjs/cache-manager cache-manager                                                                                                   |
+| Configuration Management and Validation | @nestjs/config joi                                                                                                                    |
+| Database Integration                    | @prisma/client pg <br/>  prisma                                                                                                       |
+| Error Tracking                          | @sentry/nestjs @sentry/profiling-node                                                                                                 |
+| Logging                                 | nest-winston winston <br/> @types/winston                                                                                             |
+| Rate Limiting                           | @nestjs/throttler                                                                                                                     |
+| Redis Integration                       | @keyv/redis                                                                                                                           |
+| Validation                              | class-validator class-transformer                                                                                                     |
+| WebSocket                               | @nestjs/platform-socket.io @nestjs/websockets socket.io                                                                               |
 
 ## Project setup
 \>= Node.js 20
@@ -39,3 +39,19 @@ npm run start
 npm run start:dev
 
 ```
+
+### Architecture
+
+![architecture](https://github.com/user-attachments/assets/bbe8b79e-f2b6-4def-8483-b664a282a87a)
+
+### ERD
+
+![erd](https://github.com/user-attachments/assets/1f33eade-299f-4ea0-97f5-63ca1ba6b9ed)
+
+### Board
+
+![board](https://github.com/user-attachments/assets/b91bc964-c9c6-4135-a94c-098af57bf151)
+
+### Ticket
+
+![ticket](https://github.com/user-attachments/assets/b2d4e073-2ca3-40b0-8a56-251e3f23d176)
